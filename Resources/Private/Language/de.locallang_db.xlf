@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.0">
+    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2016-04-26T20:15:00Z" product-name="cart_paypal">
+        <header/>
+        <body>
+
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.completed">
+                <source>completed</source>
+                <target>completed</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.created">
+                <source>created</source>
+                <target>created</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.denied">
+                <source>denied</source>
+                <target>denied</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.expired">
+                <source>expired</source>
+                <target>expired</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.failed">
+                <source>failed</source>
+                <target>failed</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.refunded">
+                <source>refunded</source>
+                <target>refunded</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.reversed">
+                <source>reversed</source>
+                <target>reversed</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.processed">
+                <source>processed</source>
+                <target>processed</target>
+            </trans-unit>
+            <trans-unit id="tx_cart_domain_model_order_transaction.status.voided">
+                <source>voided</source>
+                <target>voided</target>
+            </trans-unit>
+
+        </body>
+    </file>
+</xliff>

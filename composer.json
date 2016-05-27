@@ -1,0 +1,32 @@
+{
+    "name": "extcode/cart-paypal",
+    "type": "typo3-cms-extension",
+    "description": "Shopping Cart(s) for TYPO3 - PayPal Payment Provider",
+    "homepage": "http://cart.extdev.de",
+    "license": [
+        "GPL-2.0+"
+    ],
+    "keywords": [
+        "TYPO3 CMS",
+        "Shopping Cart",
+        "PayPal",
+        "cart"
+    ],
+    "support": {
+        "issues": "https://forge.typo3.org/projects/extension-cart"
+    },
+    "version": "0.1.0",
+    "require": {
+        "php": ">=5.4.0",
+        "typo3/cms-core": ">=6.2.1,<8.0",
+        "extcode/cart": ">=6.2.0"
+    },
+    "replace": {
+        "cart_paypal": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Extcode\\CartPaypal\\": "Classes/"
+        }
+    }
+}
