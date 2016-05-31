@@ -48,18 +48,25 @@ class Payment
     protected $configurationManager;
 
     /**
+     * Cart Repository
+     *
+     * @var \Extcode\Cart\Domain\Repository\CartRepository
+     */
+    protected $cartRepository;
+
+    /**
      * Cart Settings
      *
      * @var array
      */
-    protected $cartSettings = [];
+    protected $cartConf = [];
 
     /**
      * Cart Paypal Settings
      *
      * @var array
      */
-    protected $cartPaypalSettings = [];
+    protected $cartPaypalConf = [];
 
     /**
      * Payment Query Url
@@ -91,8 +98,6 @@ class Payment
 
     /**
      * Intitialize
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -102,12 +107,13 @@ class Payment
         $this->configurationManager =
             $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
 
-        $this->cartSettings =
+        $this->cartConf =
             $this->configurationManager->getConfiguration(
-                \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK
+                \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
+                'Cart'
             );
 
-        $this->cartPaypalSettings =
+        $this->cartPaypalConf =
             $this->configurationManager->getConfiguration(
                 \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
                 'CartPaypal'
@@ -124,11 +130,16 @@ class Payment
         if ($this->orderItem->getPayment()->getProvider() == 'PAYPAL') {
             $this->cart = $params['cart'];
 
-            $cart = $this->objectManager->get('Extcode\\Cart\\Domain\\Model\\Cart');
+            $cart = $this->objectManager->get(
+                \Extcode\Cart\Domain\Model\Cart::class
+            );
             $cart->setOrderItem($this->orderItem);
             $cart->setCart($this->cart);
+            $cart->setPid($this->cartConf['settings']['order']['pid']);
 
-            $cartRepository = $this->objectManager->get('Extcode\\Cart\\Domain\\Repository\\CartRepository');
+            $cartRepository = $this->objectManager->get(
+                \Extcode\Cart\Domain\Repository\CartRepository::class
+            );
             $cartRepository->add($cart);
 
             $this->persistenceManager->persistAll();
@@ -148,7 +159,7 @@ class Payment
      */
     protected function getQueryUrl()
     {
-        if ($this->cartPaypalSettings['settings']['sandbox']) {
+        if ($this->cartPaypalConf['settings']['sandbox']) {
             $this->paymentQueryUrl = 'https://www.sandbox.paypal.com/webscr?';
         } else {
             $this->paymentQueryUrl = 'https://www.paypal.com/webscr?';
@@ -174,17 +185,17 @@ class Payment
      */
     protected function getQueryFromSettings()
     {
-        $this->paymentQuery['business']      = $this->cartPaypalSettings['settings']['business'];
-        $this->paymentQuery['test_ipn']      = intval($this->cartPaypalSettings['settings']['sandbox']);
+        $this->paymentQuery['business']      = $this->cartPaypalConf['settings']['business'];
+        $this->paymentQuery['test_ipn']      = intval($this->cartPaypalConf['settings']['sandbox']);
 
-        $this->paymentQuery['notify_url']    = $this->cartPaypalSettings['settings']['notify_url'];
-        $this->paymentQuery['return']        = $this->cartPaypalSettings['settings']['return_url'];
-        $this->paymentQuery['cancel_return'] = $this->cartPaypalSettings['settings']['cancel_url'];
+        $this->paymentQuery['notify_url']    = $this->cartPaypalConf['settings']['notify_url'];
+        $this->paymentQuery['return']        = $this->cartPaypalConf['settings']['return_url'];
+        $this->paymentQuery['cancel_return'] = $this->cartPaypalConf['settings']['cancel_url'];
 
         $this->paymentQuery['cmd']           = '_cart';
         $this->paymentQuery['upload']        = '1';
 
-        $this->paymentQuery['currency_code'] = $this->cartPaypalSettings['settings']['currency_code'];
+        $this->paymentQuery['currency_code'] = $this->cartPaypalConf['settings']['currency_code'];
     }
 
     /**
@@ -196,7 +207,7 @@ class Payment
     {
         $this->paymentQuery['invoice'] = $this->cart->getOrderNumber();
 
-        if ($this->cartPaypalSettings['settings']['sendEachItemToPaypal']) {
+        if ($this->cartPaypalConf['settings']['sendEachItemToPaypal']) {
             $this->addEachItemsFromCartToQuery();
         } else {
             $this->addEntireCartToQuery();
@@ -276,7 +287,7 @@ class Payment
         $this->paymentQuery['quantity'] = 1;
         $this->paymentQuery['mc_gross'] = number_format($this->cart->getGross() + $this->cart->getServiceGross(), 2);
 
-        $this->paymentQuery['item_name_1'] = $this->cartPaypalSettings['settings']['sendEachItemToPaypalTitle'];
+        $this->paymentQuery['item_name_1'] = $this->cartPaypalConf['settings']['sendEachItemToPaypalTitle'];
         $this->paymentQuery['quantity_1'] = 1;
         $this->paymentQuery['amount_1'] = $this->paymentQuery['mc_gross'];
     }

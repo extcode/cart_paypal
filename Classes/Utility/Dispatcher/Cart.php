@@ -62,7 +62,6 @@ class Cart
      * Cart Repository
      *
      * @var \Extcode\Cart\Domain\Repository\CartRepository
-     * @inject
      */
     protected $cartRepository;
 
@@ -117,6 +116,11 @@ class Cart
     protected $transaction;
 
     /**
+     * @var \TYPO3\CMS\Extbase\Service\TypoScriptService
+     */
+    protected $typoScriptService;
+
+    /**
      * Order Number
      *
      * @var string
@@ -139,9 +143,18 @@ class Cart
     protected $conf = [];
 
     /**
+     * Cart Configuration
+     *
      * @var array
      */
-    protected $settings = [];
+    protected $cartConf = [];
+
+    /**
+     * Cart Paypal Configuration
+     *
+     * @var array
+     */
+    protected $cartPaypalConf = [];
 
     /**
      * Curl Result
@@ -172,7 +185,7 @@ class Cart
     public function injectConfigurationManager(
         \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface $configurationManager
     ) {
-        $this->configurationManager = $configurationManager;
+        $this->cartPaypalConfigurationManager = $configurationManager;
     }
 
     /**
@@ -196,7 +209,7 @@ class Cart
     /**
      * @param \Extcode\Cart\Domain\Repository\CartRepository $cartRepository
      */
-    public function injectRatingRepository(
+    public function injectCartRepository(
         \Extcode\Cart\Domain\Repository\CartRepository $cartRepository
     ) {
         $this->cartRepository = $cartRepository;
@@ -230,20 +243,25 @@ class Cart
     }
 
     /**
+     * @param \TYPO3\CMS\Extbase\Service\TypoScriptService $typoScriptService
+     */
+    public function injectTypoScriptService(
+        \TYPO3\CMS\Extbase\Service\TypoScriptService $typoScriptService
+    ) {
+        $this->typoScriptService = $typoScriptService;
+    }
+
+    /**
      * Initialize Settings
      */
     protected function initSettings()
     {
-        $typoScriptService = $this->objectManager->get(
-            \TYPO3\CMS\Extbase\Service\TypoScriptService::class
+        $this->cartConf = $this->typoScriptService->convertTypoScriptArrayToPlainArray(
+            $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_cart.']
         );
-
-        $plugin = $GLOBALS['TSFE']->tmpl->setup['plugin.'];
-        $this->conf = $typoScriptService->convertTypoScriptArrayToPlainArray(
+        $this->cartPaypalConf = $this->typoScriptService->convertTypoScriptArrayToPlainArray(
             $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_cartpaypal.']
         );
-
-        $this->settings = $this->conf['settings'];
     }
 
     /**
@@ -296,11 +314,11 @@ class Cart
     protected function testIpnAction()
     {
         $response = [
-            'sandbox' => $this->settings['sandbox'] ? true : false,
-            'business' => $this->settings['business'] ? true : false,
-            'notify_url' => $this->settings['notify_url'] ? true : false,
-            'return_url' => $this->settings['return_url'] ? true : false,
-            'cancel_url' => $this->settings['cancel_url'] ? true : false,
+            'sandbox' => $this->cartPaypalConf['settings']['sandbox'] ? true : false,
+            'business' => $this->cartPaypalConf['settings']['business'] ? true : false,
+            'notify_url' => $this->cartPaypalConf['settings']['notify_url'] ? true : false,
+            'return_url' => $this->cartPaypalConf['settings']['return_url'] ? true : false,
+            'cancel_url' => $this->cartPaypalConf['settings']['cancel_url'] ? true : false,
         ];
 
         return $response;
@@ -505,8 +523,8 @@ class Cart
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 
-        if (is_array($this->conf) && intval($this->conf['curl_timeout'])) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->conf['curl_timeout']));
+        if (is_array($this->cartPaypalConf) && intval($this->cartPaypalConf['curl_timeout'])) {
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->cartPaypalConf['curl_timeout']));
         } else {
             // Set TCP timeout to 300 seconds
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
@@ -561,7 +579,7 @@ class Cart
      */
     protected function getPaypalUrl()
     {
-        if ($this->settings['sandbox']) {
+        if ($this->cartPaypalConf['settings']['sandbox']) {
             $paypalUrl = "https://www.sandbox.paypal.com/cgi-bin/webscr";
         } else {
             $paypalUrl = "https://www.paypal.com/cgi-bin/webscr";
@@ -596,6 +614,13 @@ class Cart
     protected function getCart()
     {
         if ($this->orderItem) {
+            /** @var $querySettings \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings */
+            $querySettings = $this->objectManager->get(
+                \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings::class
+            );
+            $querySettings->setStoragePageIds(array($this->cartConf['settings']['order']['pid']));
+            $this->cartRepository->setDefaultQuerySettings($querySettings);
+
             $this->cart = $this->cartRepository->findOneByOrderItem($this->orderItem);
         }
     }
