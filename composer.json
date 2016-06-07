@@ -15,11 +15,11 @@
     "support": {
         "issues": "https://forge.typo3.org/projects/extension-cart"
     },
-    "version": "0.1.1",
+    "version": "0.1.2",
     "require": {
         "php": ">=5.4.0",
         "typo3/cms-core": ">=6.2.1,<8.0",
-        "extcode/cart": ">=6.2.0"
+        "extcode/cart": ">=0.6.2"
     },
     "replace": {
         "cart_paypal": "*"
