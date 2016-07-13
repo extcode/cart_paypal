@@ -249,16 +249,17 @@ class Payment
     protected function addEachCouponFromCartToQuery()
     {
         if ($this->cart->getCoupons()) {
-            $count = 0;
+            $discount = 0;
             /**
              * @var $cartCoupon \Extcode\Cart\Domain\Model\Cart\CartCoupon
              */
             foreach ($this->cart->getCoupons() as $cartCoupon) {
                 if ($cartCoupon->getIsUseable()) {
-                    $this->paymentQuery['discount_amount_' . $count] = $cartCoupon->getDiscount();
-                    $count++;
+                    $discount += $cartCoupon->getDiscount();
                 }
             }
+
+            $this->paymentQuery['discount_amount_cart'] = $discount;
         }
     }
 
