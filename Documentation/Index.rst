@@ -11,44 +11,44 @@
 EXT: CartPaypal
 ===========================
 
-.. image:: /Images/cart_paypal_logo.png
-        :height: 200
-        :width: 200
+.. image:: Images/cart_paypal_logo.png
+   :height: 200
+   :width: 200
+
 
 .. only:: html
 
-        :Version:
-                |release|
+    :Version:
+        |release|
 
-        :Language:
-                en
+    :Sprache:
+        de
 
-        :Description:
-                Shopping Cart(s) for TYPO3 - PayPal Payment Provider
+    :Beschreibung:
+        CartPaypal fügt PayPal als Zahlungsanbieter (Payment Provider) zu Cart, der Shopping Extension für TYPO3 hinzu.
 
-        :Keywords:
-                cart, shop, shopping, e-commerce, ecommerce, checkout, payment, paypal
+    :Keywords:
+        cart, shop, shopping, e-commerce, ecommerce, checkout, payment
 
-        :Author:
-                Daniel Lorenz
+    :Autor:
+        Daniel Lorenz
 
-        :Email:
-                ext.cart.paypal@extco.de
+    :E-Mail:
+        ext.cart.paypal@extco.de
 
-        :Rendered:
-                |today|
+    :Rendered:
+        |today|
 
-        The content of this document is related to TYPO3,
-        a GNU/GPL CMS/Framework available from `www.typo3.org <https://typo3.org/>`__.
+    The content of this document is related to TYPO3,
+    a GNU/GPL CMS/Framework available from `www.typo3.org <https://typo3.org/>`__.
 
-        **Table of Contents**
-
+    **Inhaltsverzeichnis**
 
 .. toctree::
-        :maxdepth: 5
-        :titlesonly:
+    :maxdepth: 5
+    :titlesonly:
 
-        Introduction/Index
-        UserManual/Index
-        DeveloperManual/Index
-        AdministratorManual/Index
+    Introduction/Index
+    UserManual/Index
+    DeveloperManual/Index
+    AdministratorManual/Index

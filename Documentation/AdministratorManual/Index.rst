@@ -3,12 +3,12 @@
 .. --------------------------------------------------
 .. -*- coding: utf-8 -*- with BOM.
 
-Administrator Manual
---------------------
+Administratoren Handbuch
+------------------------
 
 .. toctree::
-    :maxdepth: 5
-    :titlesonly:
+   :maxdepth: 5
+   :titlesonly:
 
-    Installation/Index
-    Configuration/Index
+   Installation/Index
+   Configuration/Index

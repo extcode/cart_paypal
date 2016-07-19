@@ -3,15 +3,20 @@
 .. --------------------------------------------------
 .. -*- coding: utf-8 -*- with BOM.
 
-Configuration
+Konfiguration
 -------------
 
-.. only:: html
+Um PayPal als Zahlungsanbieter in den Bezahlmethoden zur Verfügung zu stellen, muss eine entsprechende Zahlmethode angelegt werden.
 
-    This chapter describes how to the extension can be configured
+siehe: `Bezahlmethode PayPal <../PaymentMethods/Index.html>`__
+
+Und es müssen einige Angaben für PayPal getroffen werden.
+
+siehe: `PayPal-Konfiguration <../PaypalConfiguration/Index.html>`__
 
 .. toctree::
-    :maxdepth: 5
-    :titlesonly:
+   :maxdepth: 5
+   :titlesonly:
 
-    TypoScript/Index
+   PaymentMethods/Index
+   PaypalConfiguration/Index
