@@ -1,20 +1,20 @@
 plugin.tx_cartpaypal {
-  settings {
-    sandbox = 1
+    settings {
+        sandbox = 1
 
-    business =
-    currency_code = EUR
+        business =
+        currency_code = EUR
 
-    sendEachItemToPaypal = 1
+        sendEachItemToPaypal = 1
 
-    notify_url =
-    return_url =
-    cancel_url =
+        notify_url =
+        return_url =
+        cancel_url =
 
-    skipInvoice = 1
-    preventEmailToSender = 0
-    preventEmailToReceiver = 0
+        skipInvoice = 1
+        preventEmailToSender = 0
+        preventEmailToReceiver = 0
 
-    sendEachItemToPaypal = 1
-  }
+        sendEachItemToPaypal = 1
+    }
 }

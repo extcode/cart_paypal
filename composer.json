@@ -2,7 +2,7 @@
     "name": "extcode/cart-paypal",
     "type": "typo3-cms-extension",
     "description": "Shopping Cart(s) for TYPO3 - PayPal Payment Provider",
-    "homepage": "http://cart.extdev.de",
+    "homepage": "https://cart.extco.de",
     "license": [
         "GPL-2.0+"
     ],
@@ -12,21 +12,53 @@
         "PayPal",
         "cart"
     ],
+    "authors": [
+        {
+            "name": "Daniel Lorenz",
+            "email": "ext.cart.paypal@extco.de",
+            "role": "Developer"
+        }
+    ],
     "support": {
-        "issues": "https://forge.typo3.org/projects/extension-cart"
+        "issues": "https://forge.typo3.org/projects/extension-cart_paypal"
     },
-    "version": "0.1.4",
+    "version": "1.0.0",
     "require": {
         "php": ">=5.4.0",
-        "typo3/cms-core": ">=6.2.1,<8.0",
-        "extcode/cart": ">=0.6.2"
+        "typo3/cms-core": "^6.2 || ^7.6",
+        "extcode/cart": ">=1.0.1"
     },
-    "replace": {
-        "cart_paypal": "*"
+    "require-dev": {
+        "namelesscoder/typo3-repository-client": "1.2.x-dev",
+        "mikey179/vfsStream": "~1.6.0",
+        "phpunit/phpunit": "~4.8.0"
     },
     "autoload": {
         "psr-4": {
-            "Extcode\\CartPaypal\\": "Classes/"
+            "Extcode\\CartPaypal\\": "Classes"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Extcode\\CartPaypal\\Tests\\": "Tests",
+            "TYPO3\\CMS\\Core\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/core/Tests/",
+            "TYPO3\\CMS\\Fluid\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/fluid/Tests/"
+        }
+    },
+    "replace": {
+        "cart_paypal": "self.version"
+    },
+    "config": {
+        "vendor-dir": ".Build/vendor",
+        "bin-dir": ".Build/bin"
+    },
+    "extra": {
+        "typo3/cms": {
+            "cms-package-dir": "{$vendor-dir}/typo3/cms",
+            "web-dir": ".Build/Web",
+            "Package": {
+                "partOfMinimalUsableSystem": true
+            }
         }
     }
 }
