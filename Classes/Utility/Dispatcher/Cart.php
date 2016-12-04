@@ -639,7 +639,7 @@ class Cart
 
     /**
      * @param string $txn_id
-     * @param string $txn_id
+     * @param string $txn_txt
      *
      * @return void
      */

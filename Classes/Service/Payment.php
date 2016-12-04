@@ -97,15 +97,24 @@ class Payment
     protected $cart = null;
 
     /**
+     * CartFHash
+     *
+     * @var string
+     */
+    protected $cartFHash = '';
+
+    /**
      * Intitialize
      */
     public function __construct()
     {
-        $this->objectManager =
-            \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
+        $this->objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
+            \TYPO3\CMS\Extbase\Object\ObjectManager::class
+        );
 
-        $this->configurationManager =
-            $this->objectManager->get('TYPO3\\CMS\\Extbase\\Configuration\\ConfigurationManager');
+        $this->configurationManager = $this->objectManager->get(
+            \TYPO3\CMS\Extbase\Configuration\ConfigurationManager::class
+        );
 
         $this->cartConf =
             $this->configurationManager->getConfiguration(
@@ -121,7 +130,11 @@ class Payment
     }
 
     /**
-     * @param $params
+     * Handle Payment - Signal Slot Function
+     *
+     * @param array $params
+     *
+     * @return array
      */
     public function handlePayment($params)
     {
@@ -144,12 +157,16 @@ class Payment
 
             $this->persistenceManager->persistAll();
 
+            $this->cartFHash = $cart->getFHash();
+
             $this->getQueryUrl();
             $this->getQuery();
 
             $paymentQueryString = http_build_query($this->paymentQuery);
             header('Location: ' . $this->paymentQueryUrl . $paymentQueryString);
         }
+
+        return [$params];
     }
 
     /**
@@ -189,8 +206,19 @@ class Payment
         $this->paymentQuery['test_ipn']      = intval($this->cartPaypalConf['settings']['sandbox']);
 
         $this->paymentQuery['notify_url']    = $this->cartPaypalConf['settings']['notify_url'];
-        $this->paymentQuery['return']        = $this->cartPaypalConf['settings']['return_url'];
-        $this->paymentQuery['cancel_return'] = $this->cartPaypalConf['settings']['cancel_url'];
+        $this->paymentQuery['return'] = $this->cartPaypalConf['settings']['return_url'];
+        $cancelUrl = $this->cartPaypalConf['settings']['cancel_url'];
+        if ($cancelUrl) {
+            $controllerParam = '&tx_cart_cart[controller]=Order';
+            $orderParam = '&tx_cart_cart[order]=' . $this->orderItem->getUid();
+
+            $actionFParam = '&tx_cart_cart[action]=paymentCancel';
+            $hashFParam = '&tx_cart_cart[hash]=' . $this->cartFHash;
+            $fParams = $controllerParam . $actionFParam . $orderParam . $hashFParam;
+
+            $cancelUrl = $cancelUrl . $fParams;
+        }
+        $this->paymentQuery['cancel_return']        = $cancelUrl;
 
         $this->paymentQuery['cmd']           = '_cart';
         $this->paymentQuery['upload']        = '1';
