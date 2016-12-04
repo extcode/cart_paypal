@@ -1,3 +1,9 @@
+1.2.0
+    2016-12-04
+    Daniel Lorenz <daniel.lorenz@extco.de>
+
+    * TASK #3: set providerUsed to true when PayPal Payment Provider is used
+
 1.1.1
     2016-12-04
     Daniel Lorenz <daniel.lorenz@extco.de>

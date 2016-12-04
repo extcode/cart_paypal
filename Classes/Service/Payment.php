@@ -141,6 +141,8 @@ class Payment
         $this->orderItem = $params['orderItem'];
 
         if ($this->orderItem->getPayment()->getProvider() == 'PAYPAL') {
+            $params['providerUsed'] = true;
+
             $this->cart = $params['cart'];
 
             $cart = $this->objectManager->get(
