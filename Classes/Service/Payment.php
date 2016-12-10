@@ -179,9 +179,9 @@ class Payment
     protected function getQueryUrl()
     {
         if ($this->cartPaypalConf['settings']['sandbox']) {
-            $this->paymentQueryUrl = 'https://www.sandbox.paypal.com/webscr?';
+            $this->paymentQueryUrl = $this->cartPaypalConf['websrcUrl']['sandbox'];
         } else {
-            $this->paymentQueryUrl = 'https://www.paypal.com/webscr?';
+            $this->paymentQueryUrl = $this->cartPaypalConf['websrcUrl']['live'];
         }
     }
 

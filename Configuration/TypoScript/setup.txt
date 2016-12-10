@@ -1,4 +1,9 @@
 plugin.tx_cartpaypal {
+    websrcUrl {
+        sandbox = https://www.sandbox.paypal.com/webscr?
+        live = https://www.paypal.com/webscr?
+    }
+
     settings {
         sandbox = 1
 
