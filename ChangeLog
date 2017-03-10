@@ -1,3 +1,13 @@
+1.3.1
+    2017-03-10
+    Daniel Lorenz <daniel.lorenz@extco.de>
+    * TASK #5: add email configuration to documentation
+
+1.3.0
+    2016-12-11
+    Daniel Lorenz <daniel.lorenz@extco.de>
+    * TASK #4: allow to configure paypal url
+
 1.2.0
     2016-12-04
     Daniel Lorenz <daniel.lorenz@extco.de>

@@ -9,7 +9,7 @@ PayPal-Konfiguration
 Das Plugin braucht einige Angaben, die an PayPal übermittelt werden, damit PayPal den Händler kennt und auch
 Rücksprungadressen in den Shop kennt.
 
-.. code-block:: typoscript
+::
 
    plugin.tx_cartpaypal {
        settings {

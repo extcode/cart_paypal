@@ -9,7 +9,7 @@ Bezahlmethode PayPal
 Die Bezahlmethode für PayPal wird wie jede andere Bezahlmethode konfiguriert. Es stehen alle Konfigurationsmöglichkeiten
 aus Cart zur Verfügung.
 
-.. code-block:: typoscript
+::
 
    plugin.tx_cart {
        payments {

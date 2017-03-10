@@ -10,9 +10,13 @@ Um PayPal als Zahlungsanbieter in den Bezahlmethoden zur Verfügung zu stellen, 
 
 siehe: `Bezahlmethode PayPal <../PaymentMethods/Index.html>`__
 
-Und es müssen einige Angaben für PayPal getroffen werden.
+Es müssen einige Angaben für PayPal getroffen werden.
 
 siehe: `PayPal-Konfiguration <../PaypalConfiguration/Index.html>`__
+
+Für den Versand von E-Mails müssen ggf. Anpassungen vorgenommen werden.
+
+siehe: `E-Mail-Konfiguration <../MailConfiguration/Index.html>`__
 
 .. toctree::
    :maxdepth: 5
@@ -20,3 +24,4 @@ siehe: `PayPal-Konfiguration <../PaypalConfiguration/Index.html>`__
 
    PaymentMethods/Index
    PaypalConfiguration/Index
+   MailConfiguration/Index
