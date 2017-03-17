@@ -7,7 +7,7 @@ if (!defined('TYPO3_MODE')) {
 $dispatcher = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\SignalSlot\\Dispatcher');
 $dispatcher->connect(
     'Extcode\Cart\Utility\OrderUtility',
-    'handlePaymentAfterOrder',
+    'handlePayment',
     'Extcode\CartPaypal\Service\Payment',
     'handlePayment'
 );
