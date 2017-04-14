@@ -15,13 +15,10 @@ namespace Extcode\CartPaypal\Service;
  * The TYPO3 project - inspiring people to share!
  */
 
-use \TYPO3\CMS\Core\Utility\GeneralUtility;
-
 /**
  * Payment Service
  *
- * @package cart_paypal
- * @author Daniel Lorenz <ext.cart.paypal@extco.de>
+ * @author Daniel Lorenz <ext.cart@extco.de>
  */
 class Payment
 {
@@ -173,8 +170,6 @@ class Payment
 
     /**
      * Returns Query Url
-     *
-     * @return void
      */
     protected function getQueryUrl()
     {
@@ -187,8 +182,6 @@ class Payment
 
     /**
      * Get Query
-     *
-     * @return void
      */
     protected function getQuery()
     {
@@ -199,8 +192,6 @@ class Payment
 
     /**
      * Get Query From Setting
-     *
-     * @return void
      */
     protected function getQueryFromSettings()
     {
@@ -230,8 +221,6 @@ class Payment
 
     /**
      * Get Query From Cart
-     *
-     * @return void
      */
     protected function getQueryFromCart()
     {
@@ -246,8 +235,6 @@ class Payment
 
     /**
      * Get Query From Order
-     *
-     * @return void
      */
     protected function getQueryFromOrder()
     {
@@ -260,7 +247,6 @@ class Payment
     }
 
     /**
-     * @return void
      */
     protected function addEachItemsFromCartToQuery()
     {
@@ -294,7 +280,6 @@ class Payment
     }
 
     /**
-     * @return void
      */
     protected function addEachProductFromCartToQuery()
     {
@@ -311,7 +296,6 @@ class Payment
     }
 
     /**
-     * @return void
      */
     protected function addEntireCartToQuery()
     {

@@ -1,3 +1,9 @@
+2.1.0
+    2017-04-14
+    Daniel Lorenz <daniel.lorenz@extco.de>
+
+    * TASK #7: add gitlab-ci configuration and cql test
+
 2.0.0
     2017-03-17
     Daniel Lorenz <daniel.lorenz@extco.de>

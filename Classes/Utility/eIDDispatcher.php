@@ -18,8 +18,7 @@ namespace Extcode\CartPaypal\Utility;
 /**
  * eID Dispatcher
  *
- * @package cart_paypal
- * @author Daniel Lorenz <ext.cart.paypal@extco.de>
+ * @author Daniel Lorenz <ext.cart@extco.de>
  */
 
 // Init TSFE for database access

@@ -18,8 +18,7 @@ namespace Extcode\CartPaypal\Utility\Dispatcher;
 /**
  * Ajax Dispatcher
  *
- * @package cart_paypal
- * @author Daniel Lorenz <ext.cart.paypal@extco.de>
+ * @author Daniel Lorenz <ext.cart@extco.de>
  */
 class Cart
 {
@@ -133,7 +132,7 @@ class Cart
     protected $arguments = [];
 
     /**
-     * @var integer
+     * @var int
      */
     protected $pageUid;
 
@@ -353,11 +352,11 @@ class Cart
         $this->getCart();
         $this->addOrderTransaction($this->curlResults['txn_id'], $rawPostData);
 
-        if (strcmp($this->curlResult, "verified") == 0) {
+        if (strcmp($this->curlResult, 'verified') == 0) {
             $paymentStatus = strtolower($this->curlResults['payment_status']);
 
             switch ($paymentStatus) {
-                case "completed":
+                case 'completed':
                     $this->orderPayment->setStatus('paid');
                     break;
                 default:
@@ -368,8 +367,8 @@ class Cart
             if ($paymentStatus == 'pending') {
                 $this->transaction->setNote($this->curlResults['pending_reason']);
             }
-        } elseif (strcmp($this->curlResult, "invalid") == 0) {
-            \TYPO3\CMS\Core\Utility\GeneralUtility::sysLog("INVALID", 'cart_paypal', 3);
+        } elseif (strcmp($this->curlResult, 'invalid') == 0) {
+            \TYPO3\CMS\Core\Utility\GeneralUtility::sysLog('INVALID', 'cart_paypal', 3);
 
             $this->transaction->setStatus('invalid');
         }
@@ -388,8 +387,6 @@ class Cart
 
     /**
      * Send Mails
-     *
-     * @return void
      */
     protected function sendMails()
     {
@@ -408,8 +405,6 @@ class Cart
      * @param \Extcode\Cart\Domain\Model\Order\Item $orderItem Order Item
      * @param \Extcode\Cart\Domain\Model\Order\Address $billingAddress Billing Address
      * @param \Extcode\Cart\Domain\Model\Order\Address $shippingAddress Shipping Address
-     *
-     * @return void
      */
     protected function sendBuyerMail(
         \Extcode\Cart\Domain\Model\Order\Item $orderItem,
@@ -431,8 +426,6 @@ class Cart
      * @param \Extcode\Cart\Domain\Model\Order\Item $orderItem Order Item
      * @param \Extcode\Cart\Domain\Model\Order\Address $billingAddress Billing Address
      * @param \Extcode\Cart\Domain\Model\Order\Address $shippingAddress Shipping Address
-     *
-     * @return void
      */
     protected function sendSellerMail(
         \Extcode\Cart\Domain\Model\Order\Item $orderItem,
@@ -580,9 +573,9 @@ class Cart
     protected function getPaypalUrl()
     {
         if ($this->cartPaypalConf['settings']['sandbox']) {
-            $paypalUrl = "https://www.sandbox.paypal.com/cgi-bin/webscr";
+            $paypalUrl = 'https://www.sandbox.paypal.com/cgi-bin/webscr';
         } else {
-            $paypalUrl = "https://www.paypal.com/cgi-bin/webscr";
+            $paypalUrl = 'https://www.paypal.com/cgi-bin/webscr';
         }
 
         return $paypalUrl;
@@ -618,7 +611,7 @@ class Cart
             $querySettings = $this->objectManager->get(
                 \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings::class
             );
-            $querySettings->setStoragePageIds(array($this->cartConf['settings']['order']['pid']));
+            $querySettings->setStoragePageIds([$this->cartConf['settings']['order']['pid']]);
             $this->cartRepository->setDefaultQuerySettings($querySettings);
 
             $this->cart = $this->cartRepository->findOneByOrderItem($this->orderItem);
@@ -640,8 +633,6 @@ class Cart
     /**
      * @param string $txn_id
      * @param string $txn_txt
-     *
-     * @return void
      */
     protected function addOrderTransaction($txn_id, $txn_txt = '')
     {

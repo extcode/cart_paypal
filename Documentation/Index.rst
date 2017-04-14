@@ -34,7 +34,7 @@ EXT: CartPaypal
         Daniel Lorenz
 
     :E-Mail:
-        ext.cart.paypal@extco.de
+        ext.cart@extco.de
 
     :Rendered:
         |today|
