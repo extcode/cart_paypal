@@ -1,3 +1,9 @@
+2.2.0
+    2017-06-11
+    Daniel Lorenz <daniel.lorenz@extco.de>
+
+    * TASK #8: format prices without thousands separator
+
 2.1.0
     2017-04-14
     Daniel Lorenz <daniel.lorenz@extco.de>

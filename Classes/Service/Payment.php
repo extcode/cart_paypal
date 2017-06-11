@@ -199,7 +199,7 @@ class Payment
         $this->paymentQuery['test_ipn']      = intval($this->cartPaypalConf['settings']['sandbox']);
 
         $this->paymentQuery['notify_url']    = $this->cartPaypalConf['settings']['notify_url'];
-        $this->paymentQuery['return'] = $this->cartPaypalConf['settings']['return_url'];
+        $this->paymentQuery['return']        = $this->cartPaypalConf['settings']['return_url'];
         $cancelUrl = $this->cartPaypalConf['settings']['cancel_url'];
         if ($cancelUrl) {
             $controllerParam = '&tx_cart_cart[controller]=Order';
@@ -251,12 +251,22 @@ class Payment
     protected function addEachItemsFromCartToQuery()
     {
         $shippingGross = $this->cart->getShipping()->getGross();
-        $this->paymentQuery['handling_cart'] = number_format($shippingGross, 2);
+        $this->paymentQuery['handling_cart'] = number_format(
+            $shippingGross,
+            2,
+            '.',
+            ''
+        );
 
         $this->addEachCouponFromCartToQuery();
         $this->addEachProductFromCartToQuery();
 
-        $this->paymentQuery['mc_gross'] = number_format($this->cart->getTotalGross(), 2);
+        $this->paymentQuery['mc_gross'] = number_format(
+            $this->cart->getTotalGross(),
+            2,
+            '.',
+            ''
+        );
     }
 
     /**
@@ -290,7 +300,12 @@ class Payment
 
                 $this->paymentQuery['item_name_' . $count] = $product->getTitle();
                 $this->paymentQuery['quantity_' . $count] = $product->getCount();
-                $this->paymentQuery['amount_' . $count] = number_format($product->getGross() / $product->getCount(), 2);
+                $this->paymentQuery['amount_' . $count] = number_format(
+                    $product->getGross() / $product->getCount(),
+                    2,
+                    '.',
+                    ''
+                );
             }
         }
     }
@@ -300,7 +315,12 @@ class Payment
     protected function addEntireCartToQuery()
     {
         $this->paymentQuery['quantity'] = 1;
-        $this->paymentQuery['mc_gross'] = number_format($this->cart->getGross() + $this->cart->getServiceGross(), 2);
+        $this->paymentQuery['mc_gross'] = number_format(
+            $this->cart->getGross() + $this->cart->getServiceGross(),
+            2,
+            '.',
+            ''
+        );
 
         $this->paymentQuery['item_name_1'] = $this->cartPaypalConf['settings']['sendEachItemToPaypalTitle'];
         $this->paymentQuery['quantity_1'] = 1;
