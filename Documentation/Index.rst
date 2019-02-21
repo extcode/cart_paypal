@@ -1,15 +1,10 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
-
 .. include:: Includes.txt
 
 .. _start:
 
-===========================
-EXT: CartPaypal
-===========================
+================
+EXT: Cart Paypal
+================
 
 .. image:: Images/cart_paypal_logo.png
    :height: 200
@@ -18,37 +13,44 @@ EXT: CartPaypal
 
 .. only:: html
 
-    :Version:
-        |release|
+   :Classification:
+      cart
 
-    :Sprache:
-        de
+   :Version:
+      |release|
 
-    :Beschreibung:
-        CartPaypal fügt PayPal als Zahlungsanbieter (Payment Provider) zu Cart, der Shopping Extension für TYPO3 hinzu.
+   :Language:
+      en
 
-    :Keywords:
-        cart, shop, shopping, e-commerce, ecommerce, checkout, payment
+   :Description:
+      Cart is a small but powerful extension which "solely" adds a shopping cart to your TYPO3 installation.
+      Cart PayPal is a payment provider and implements the PayPal IPN message service.
 
-    :Autor:
-        Daniel Lorenz
+   :Keywords:
+      cart, shop, shopping, e-commerce, ecommerce, checkout, payment, paypal
 
-    :E-Mail:
-        ext.cart@extco.de
+   :Autor:
+      Daniel Gohlke
 
-    :Rendered:
-        |today|
+   :E-Mail:
+      ext.cart@extco.de
 
-    The content of this document is related to TYPO3,
-    a GNU/GPL CMS/Framework available from `www.typo3.org <https://typo3.org/>`__.
+   :License:
+      This document is published under the Open Publication License
+      available from http://www.opencontent.org/openpub/
 
-    **Inhaltsverzeichnis**
+   :Rendered:
+      |today|
+
+   The content of this document is related to TYPO3,
+   a GNU/GPL CMS/Framework available from `www.typo3.org <https://typo3.org/>`__.
+
+   **Table of Contents**
 
 .. toctree::
-    :maxdepth: 5
-    :titlesonly:
+   :maxdepth: 5
+   :titlesonly:
 
-    Introduction/Index
-    UserManual/Index
-    DeveloperManual/Index
-    AdministratorManual/Index
+   Introduction/Index
+   AdministratorManual/Index
+   Changelog/Index

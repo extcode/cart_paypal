@@ -1,27 +1,11 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
+.. include:: ../../Includes.txt
 
-Konfiguration
--------------
-
-Um PayPal als Zahlungsanbieter in den Bezahlmethoden zur Verfügung zu stellen, muss eine entsprechende Zahlmethode angelegt werden.
-
-siehe: `Bezahlmethode PayPal <../PaymentMethods/Index.html>`__
-
-Es müssen einige Angaben für PayPal getroffen werden.
-
-siehe: `PayPal-Konfiguration <../PaypalConfiguration/Index.html>`__
-
-Für den Versand von E-Mails müssen ggf. Anpassungen vorgenommen werden.
-
-siehe: `E-Mail-Konfiguration <../MailConfiguration/Index.html>`__
+Configuration
+=============
 
 .. toctree::
    :maxdepth: 5
    :titlesonly:
 
-   PaymentMethods/Index
-   PaypalConfiguration/Index
-   MailConfiguration/Index
+   Main/Index
+   PaymentMethod/Index
