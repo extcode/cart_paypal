@@ -14,7 +14,7 @@
     ],
     "authors": [
         {
-            "name": "Daniel Lorenz",
+            "name": "Daniel Gohlke",
             "email": "ext.cart@extco.de",
             "role": "Developer"
         }
@@ -23,42 +23,40 @@
         "issues": "https://github.com/extcode/cart_paypal/issues"
     },
     "require": {
-        "php": ">=5.4.0",
-        "typo3/cms-core": "^6.2 || ^7.6 || ^8.7",
-        "extcode/cart": ">=1.0.1"
+        "php": ">=7.2.0 <7.3",
+        "ext-curl": "*",
+        "typo3/cms-core": "^9.5",
+        "typo3/cms-extbase": "^9.5",
+        "typo3/cms-frontend": "^9.5",
+        "extcode/cart": "^6.3"
     },
     "require-dev": {
-        "nimut/testing-framework": "^1.0",
-        "mikey179/vfsStream": "~1.6.0",
-        "phpunit/phpunit": "~4.8.0",
-        "friendsofphp/php-cs-fixer": "^2.0"
+        "friendsofphp/php-cs-fixer": "^2.0",
+        "helmich/typo3-typoscript-lint": "^1.4"
     },
     "autoload": {
         "psr-4": {
             "Extcode\\CartPaypal\\": "Classes"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Extcode\\CartPaypal\\Tests\\": "Tests",
-            "TYPO3\\CMS\\Core\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/core/Tests/",
-            "TYPO3\\CMS\\Fluid\\Tests\\": ".Build/vendor/typo3/cms/typo3/sysext/fluid/Tests/"
-        }
-    },
     "replace": {
-        "cart_paypal": "self.version"
+        "cart_paypal": "self.version",
+        "extcode/cart_paypal": "self.version"
     },
     "config": {
         "vendor-dir": ".Build/vendor",
         "bin-dir": ".Build/bin"
     },
+    "scripts": {
+        "post-autoload-dump": [
+            "mkdir -p .Build/Web/typo3conf/ext/",
+            "[ -L .Build/Web/typo3conf/ext/cart_paypal ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/cart_paypal"
+        ]
+    },
     "extra": {
         "typo3/cms": {
             "cms-package-dir": "{$vendor-dir}/typo3/cms",
-            "web-dir": ".Build/Web",
-            "Package": {
-                "partOfMinimalUsableSystem": true
-            }
+            "web-dir": ".Build/Web"
         }
     }
 }

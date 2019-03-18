@@ -1,27 +1,38 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
+.. include:: ../../Includes.txt
 
 Installation
 ============
 
-Die Erweiterung wird wie jede andere Erweiterung im TYPO3 CMS installiert.
-
-Versionsverwaltung (github)
+Installation using Composer
 ---------------------------
-Die aktuellste Version lässt sich über github mit den üblichen git-Kommandos herunterladen.
+
+The recommended way to install the extension is by using `Composer <https://getcomposer.org/>`_.
+In your Composer based TYPO3 project root, just do
+
+`composer require extcode/cart-paypal`.
+
+Installation from TYPO3 Extension Repository (TER)
+--------------------------------------------------
+
+Download and install the extension with the extension manager module.
+
+Latest version from git
+-----------------------
+You can get the latest version from git by using the git command:
 
 .. code-block:: bash
 
    git clone git@github.com:extcode/cart_paypal.git
 
-|
+Preparation: Include static TypoScript
+--------------------------------------
 
-Nachdem die Erweiterung heruntergeladen ist, kann sie über den Extension-Manager aktiviert werden.
+The extension ships some TypoScript code which needs to be included.
 
-Vorbereitung: Include static TypoScript
----------------------------------------
+#. Switch to the root page of your site.
 
-Die Erweiterung wird mit einer TypoScript Konfigurationsdatei ausgeliefert, die in das Template eingebunden werden
-muss.
+#. Switch to the **Template module** and select *Info/Modify*.
+
+#. Press the link **Edit the whole template record** and switch to the tab *Includes*.
+
+#. Select **Shopping Cart - PayPal** at the field *Include static (from extensions):*

@@ -1,28 +1,20 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
-.. -*- coding: utf-8 -*- with BOM.
+.. include:: ../../Includes.txt
 
 Support
 =======
 
 Slack
 -----
-Auf Slack wurde ein eigener Kanal eingerichtet, um mit den Entwicklern und anderen Nutzern von Cart in Kontakt zu
-treten!
+There is an own channel at the TYPO3 Slack. Please use this cannel to contact us.
 
-Die URL lautet: https://typo3.slack.com/messages/ext-cart/
+The URL is: https://typo3.slack.com/messages/ext-cart/
 
 .. note::
 
-   Noch nicht auf Slack registriert? Unter http://forger.typo3.org/slack kann ein Zugang eingerichtet werden.
+   Not registered on Slack? You can join here: http://forger.typo3.org/slack.
 
-Sponsoring
-----------
-Gibt es eine Funktion, die in Cart noch nicht umgesetzt wurde, können Sie mich jederzeit kontaktieren.
+Support
+-------
+If you need further support, please contact me.
 
-Unterstützung
--------------
-Wenn Sie privaten oder persönliche Unterstützung benötigen, wenden Sie sich gern an mich.
-
-**Diese Unterstützung kann nicht in jedem Fall kostenfrei erfolgen!**
+**Be aware that this support might not be free!**
