@@ -1,6 +1,6 @@
 <?php
 
-$EM_CONF[$_EXTKEY] = [
+$EM_CONF['cart_paypal'] = [
     'title' => 'Cart - PayPal',
     'description' => 'Shopping Cart(s) for TYPO3 - PayPal Payment Provider',
     'category' => 'services',
@@ -17,7 +17,7 @@ $EM_CONF[$_EXTKEY] = [
     'modify_tables' => '',
     'clearCacheOnLoad' => 0,
     'lockType' => '',
-    'version' => '4.0.0',
+    'version' => '4.0.1',
     'constraints' => [
         'depends' => [
             'typo3' => '9.5.0-9.5.99',

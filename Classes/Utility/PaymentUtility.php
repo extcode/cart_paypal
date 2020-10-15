@@ -12,8 +12,8 @@ use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
 class PaymentUtility
 {
-    const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/webscr?';
-    const PAYPAL_API_LIVE = 'https://www.paypal.com/webscr?';
+    const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
+    const PAYPAL_API_LIVE = 'https://www.paypal.com/cgi-bin/webscr?';
 
     /**
      * @var ObjectManager
