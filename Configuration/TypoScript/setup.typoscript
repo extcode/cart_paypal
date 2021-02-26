@@ -20,17 +20,4 @@ plugin.tx_cartpaypal {
     redirectTypeNum = {$plugin.tx_cartpaypal.redirectTypeNum}
 
     sendEachItemToPaypal = 1
-
-    finishers {
-        order {
-            success {
-                400 {
-                    class = Extcode\Cart\Domain\Finisher\Order\EmailFinisher
-                }
-                500 {
-                    class = Extcode\Cart\Domain\Finisher\Order\ClearCartFinisher
-                }
-            }
-        }
-    }
 }

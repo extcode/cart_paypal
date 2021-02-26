@@ -32,4 +32,5 @@ from Cart available.
       string
    Description
       Defines that the payment provider for PayPal should be used.
-      This information is mandatory and ensures that the extension Cart PayPal takes control and for the authorization of payment the user forwards to the PayPal site.
+      This information is mandatory and ensures that the extension Cart PayPal takes control and for the authorization
+      of payment the user forwards to the PayPal site.

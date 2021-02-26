@@ -1,164 +1,149 @@
 <?php
-
+declare(strict_types=1);
 namespace Extcode\CartPaypal\Controller\Order;
 
+/*
+ * This file is part of the package extcode/cart-paypal.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE file that was distributed with this source code.
+ */
+
+use Extcode\Cart\Domain\Model\Cart;
+use Extcode\Cart\Domain\Repository\CartRepository;
+use Extcode\Cart\Domain\Repository\Order\PaymentRepository;
+use Extcode\Cart\Service\SessionHandler;
+use Extcode\CartPaypal\Event\Order\CancelEvent;
+use Extcode\CartPaypal\Event\Order\NotifyEvent;
+use Extcode\CartPaypal\Event\Order\SuccessEvent;
+use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Log\LogManagerInterface;
+use TYPO3\CMS\Core\Messaging\AbstractMessage;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface;
+use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
+use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
+use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
-class PaymentController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionController
+class PaymentController extends ActionController
 {
+    const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
+    const PAYPAL_API_LIVE = 'https://www.paypal.com/cgi-bin/webscr?';
+
     /**
-     * @var \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
+     * @var PersistenceManager
      */
     protected $persistenceManager;
 
     /**
-     * Session Handler
-     *
-     * @var \Extcode\Cart\Service\SessionHandler
+     * @var SessionHandler
      */
     protected $sessionHandler;
 
     /**
-     * @var \Extcode\Cart\Domain\Repository\CartRepository
+     * @var CartRepository
      */
     protected $cartRepository;
 
     /**
-     * @var \Extcode\Cart\Domain\Repository\Order\PaymentRepository
+     * @var PaymentRepository
      */
     protected $paymentRepository;
 
     /**
-     * @var \Extcode\Cart\Domain\Model\Cart
+     * @var Cart
      */
-    protected $cart = null;
+    protected $cart;
 
     /**
      * @var array
      */
-    protected $cartPluginSettings;
+    protected $cartConf = [];
 
     /**
      * @var array
      */
-    protected $pluginSettings;
+    protected $cartPaypalConf = [];
 
-    /**
-     * @param \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager $persistenceManager
-     */
-    public function injectPersistenceManager(
-        \TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager $persistenceManager
+    public function __construct(
+        LogManagerInterface $logManager,
+        PersistenceManager $persistenceManager,
+        SessionHandler $sessionHandler,
+        CartRepository $cartRepository,
+        PaymentRepository $paymentRepository
     ) {
+        $this->logger = $logManager->getLogger();
         $this->persistenceManager = $persistenceManager;
-    }
-
-    /**
-     * @param \Extcode\Cart\Service\SessionHandler $sessionHandler
-     */
-    public function injectSessionHandler(
-        \Extcode\Cart\Service\SessionHandler $sessionHandler
-    ) {
         $this->sessionHandler = $sessionHandler;
-    }
-
-    /**
-     * @param \Extcode\Cart\Domain\Repository\CartRepository $cartRepository
-     */
-    public function injectCartRepository(
-        \Extcode\Cart\Domain\Repository\CartRepository $cartRepository
-    ) {
         $this->cartRepository = $cartRepository;
-    }
-
-    /**
-     * @param \Extcode\Cart\Domain\Repository\Order\PaymentRepository $paymentRepository
-     */
-    public function injectPaymentRepository(
-        \Extcode\Cart\Domain\Repository\Order\PaymentRepository $paymentRepository
-    ) {
         $this->paymentRepository = $paymentRepository;
     }
 
-    /**
-     * Initialize Action
-     */
-    protected function initializeAction()
+    protected function initializeAction(): void
     {
-        $this->cartPluginSettings =
+        $this->cartConf =
             $this->configurationManager->getConfiguration(
-                \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
+                ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
                 'Cart'
             );
 
-        $this->pluginSettings =
+        $this->cartPaypalConf =
             $this->configurationManager->getConfiguration(
-                \TYPO3\CMS\Extbase\Configuration\ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
+                ConfigurationManagerInterface::CONFIGURATION_TYPE_FRAMEWORK,
                 'CartPayPal'
             );
     }
 
-    /**
-     * Success Action
-     */
-    public function successAction()
+    public function successAction(): void
     {
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
-            $hash = $this->request->getArgument('hash');
-
-            $querySettings = $this->objectManager->get(
-                \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings::class
-            );
-            $querySettings->setStoragePageIds([$this->cartPluginSettings['settings']['order']['pid']]);
-            $this->cartRepository->setDefaultQuerySettings($querySettings);
-
-            $this->cart = $this->cartRepository->findOneBySHash($hash);
+            $this->loadCartByHash($this->request->getArgument('hash'));
 
             if ($this->cart) {
                 $orderItem = $this->cart->getOrderItem();
 
-                $this->invokeFinishers($orderItem, 'success');
+                $successEvent = new SuccessEvent($this->cart->getCart(), $orderItem, $this->cartConf);
+                $this->eventDispatcher->dispatch($successEvent);
+
                 $this->redirect('show', 'Cart\Order', 'Cart', ['orderItem' => $orderItem]);
             } else {
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.success.error_occured',
-                        $this->extensionName
+                        'cart_paypal'
                     ),
                     '',
-                    \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR
+                    AbstractMessage::ERROR
                 );
             }
         } else {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_cartpaypal.controller.order.payment.action.success.access_denied',
-                    $this->extensionName
+                    'cart_paypal'
                 ),
                 '',
-                \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR
+                AbstractMessage::ERROR
             );
         }
     }
 
-    /**
-     * Cancel Action
-     */
-    public function cancelAction()
+    public function cancelAction(): void
     {
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
-            $hash = $this->request->getArgument('hash');
-
-            $querySettings = $this->objectManager->get(
-                \TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings::class
-            );
-            $querySettings->setStoragePageIds([$this->cartPluginSettings['settings']['order']['pid']]);
-            $this->cartRepository->setDefaultQuerySettings($querySettings);
-
-            $this->cart = $this->cartRepository->findOneByFHash($hash);
+            $this->loadCartByHash($this->request->getArgument('hash'), 'FHash');
 
             if ($this->cart) {
                 $orderItem = $this->cart->getOrderItem();
                 $payment = $orderItem->getPayment();
+
+                $this->restoreCartSession();
 
                 $payment->setStatus('canceled');
 
@@ -168,76 +153,185 @@ class PaymentController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionControll
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.cancel.successfully_canceled',
-                        $this->extensionName
-                    ),
-                    '',
-                    \TYPO3\CMS\Core\Messaging\AbstractMessage::OK
+                        'cart_paypal'
+                    )
                 );
 
-                $this->invokeFinishers($orderItem, 'cancel');
+                $cancelEvent = new CancelEvent($this->cart->getCart(), $orderItem, $this->cartConf);
+                $this->eventDispatcher->dispatch($cancelEvent);
+
                 $this->redirect('show', 'Cart\Cart', 'Cart');
             } else {
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.cancel.error_occured',
-                        $this->extensionName
+                        'cart_paypal'
                     ),
                     '',
-                    \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR
+                    AbstractMessage::ERROR
                 );
             }
         } else {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_cartpaypal.controller.order.payment.action.cancel.access_denied',
-                    $this->extensionName
+                    'cart_paypal'
                 ),
                 '',
-                \TYPO3\CMS\Core\Messaging\AbstractMessage::ERROR
+                AbstractMessage::ERROR
             );
         }
     }
 
-    /**
-     * Executes all finishers of this form
-     *
-     * @param \Extcode\Cart\Domain\Model\Order\Item $orderItem
-     * @param string $returnStatus
-     */
-    protected function invokeFinishers(\Extcode\Cart\Domain\Model\Order\Item $orderItem, string $returnStatus)
+    public function notifyAction(): void
     {
-        $cart = $this->sessionHandler->restore($this->cartPluginSettings['settings']['cart']['pid']);
-
-        $finisherContext = $this->objectManager->get(
-            \Extcode\Cart\Domain\Finisher\FinisherContext::class,
-            $this->cartPluginSettings,
-            $cart,
-            $orderItem,
-            $this->getControllerContext()
-        );
-
-        if (is_array($this->pluginSettings['finishers']) &&
-            is_array($this->pluginSettings['finishers']['order']) &&
-            is_array($this->pluginSettings['finishers']['order'][$returnStatus])
-        ) {
-            ksort($this->pluginSettings['finishers']['order'][$returnStatus]);
-            foreach ($this->pluginSettings['finishers']['order'][$returnStatus] as $finisherConfig) {
-                $finisherClass = $finisherConfig['class'];
-
-                if (class_exists($finisherClass)) {
-                    $finisher = $this->objectManager->get($finisherClass);
-                    $finisher->execute($finisherContext);
-                    if ($finisherContext->isCancelled()) {
-                        break;
-                    }
-                } else {
-                    $logManager = $this->objectManager->get(
-                        \TYPO3\CMS\Core\Log\LogManager::class
-                    );
-                    $logger = $logManager->getLogger(__CLASS__);
-                    $logger->error('Can\'t find Finisher class \'' . $finisherClass . '\'.', []);
-                }
-            }
+        if ($this->request->getMethod() !== 'POST') {
+            $this->response->setStatus(405);
+            exit();
         }
+
+        $postData = GeneralUtility::_POST();
+
+        $curlRequest = $this->getCurlRequestFromPostData($postData);
+
+        if ($this->cartPaypalConf['debug']) {
+            $this->logger->debug(
+                'Log Data',
+                [
+                    '$parsedPostData' => $postData,
+                    '$curlRequest' => $curlRequest
+                ]
+            );
+        }
+
+        $this->execCurlRequest($curlRequest);
+
+        $cartSHash = $postData['custom'];
+        if (empty($cartSHash)) {
+            $this->response->setStatus(403);
+            exit();
+        }
+
+        $this->loadCartByHash($this->request->getArgument('hash'));
+
+        if ($this->cart === null) {
+            $this->response->setStatus(404);
+            exit();
+        }
+
+        $orderItem = $this->cart->getOrderItem();
+        $payment = $orderItem->getPayment();
+
+        if ($payment->getStatus() !== 'paid') {
+            $payment->setStatus('paid');
+            $this->paymentRepository->update($payment);
+            $this->persistenceManager->persistAll();
+
+            $notifyEvent = new NotifyEvent($this->cart->getCart(), $orderItem, $this->cartConf);
+            $this->eventDispatcher->dispatch($notifyEvent);
+        }
+
+        $this->response->setStatus(200);
+        exit();
+    }
+
+    protected function restoreCartSession(): void
+    {
+        $cart = $this->cart->getCart();
+        $cart->resetOrderNumber();
+        $cart->resetInvoiceNumber();
+        $this->sessionHandler->write($cart, $this->cartConf['settings']['cart']['pid']);
+    }
+
+    protected function getCurlRequestFromPostData(array $parsePostData): string
+    {
+        $curlRequest = 'cmd=_notify-validate';
+        foreach ($parsePostData as $key => $value) {
+            $value = urlencode($value);
+            $curlRequest .= "&$key=$value";
+        }
+
+        return $curlRequest;
+    }
+
+    protected function execCurlRequest(string $curlRequest): bool
+    {
+        $paypalUrl = $this->getPaypalUrl();
+
+        $ch = curl_init($paypalUrl);
+        if ($ch === false) {
+            return false;
+        }
+
+        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $curlRequest);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
+
+        if (is_array($this->cartPaypalConf) && intval($this->cartPaypalConf['curl_timeout'])) {
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->cartPaypalConf['curl_timeout']));
+        } else {
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
+        }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
+
+        $this->curlResult = strtolower(curl_exec($ch));
+        $curlError = curl_errno($ch);
+
+        if ($curlError !== 0) {
+            $this->logger->warning(
+                'paypal-payment-api',
+                [
+                    'ERROR' => 'Can\'t connect to PayPal to validate IPN message',
+                    'curl_error' => curl_error($ch),
+                    'curl_request' => $curlRequest,
+                    'curl_result' => $this->curlResult,
+                ]
+            );
+
+            curl_close($ch);
+            exit;
+        }
+
+        if ($this->cartPaypalConf['debug']) {
+            $this->logger->debug(
+                'paypal-payment-api',
+                [
+                    'curl_info' => curl_getinfo($ch, CURLINFO_HEADER_OUT),
+                    'curl_request' => $curlRequest,
+                    'curl_result' => $this->curlResult,
+                ]
+            );
+        }
+
+        $this->curlResults = explode("\r\n\r\n", $this->curlResult);
+
+        curl_close($ch);
+
+        return true;
+    }
+
+    protected function getPaypalUrl(): string
+    {
+        if ($this->cartPaypalConf['sandbox']) {
+            return self::PAYPAL_API_SANDBOX;
+        }
+
+        return self::PAYPAL_API_LIVE;
+    }
+
+    protected function loadCartByHash(string $hash, string $type = 'SHash'): void
+    {
+        $querySettings = GeneralUtility::makeInstance(
+            Typo3QuerySettings::class
+        );
+        $querySettings->setStoragePageIds([$this->cartConf['settings']['order']['pid']]);
+        $this->cartRepository->setDefaultQuerySettings($querySettings);
+
+        $findOneByMethod = 'findOneBy' . $type;
+        $this->cart = $this->cartRepository->$findOneByMethod($hash);
     }
 }

@@ -22,41 +22,56 @@
     "support": {
         "issues": "https://github.com/extcode/cart_paypal/issues"
     },
-    "require": {
-        "php": ">=7.2.0 <7.5",
-        "ext-curl": "*",
-        "typo3/cms-core": "^9.5",
-        "typo3/cms-extbase": "^9.5",
-        "typo3/cms-frontend": "^9.5",
-        "extcode/cart": "^6.3"
-    },
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.0",
-        "helmich/typo3-typoscript-lint": "^1.4"
-    },
     "autoload": {
         "psr-4": {
             "Extcode\\CartPaypal\\": "Classes"
         }
     },
-    "replace": {
-        "cart_paypal": "self.version",
-        "extcode/cart_paypal": "self.version"
-    },
     "config": {
-        "vendor-dir": ".Build/vendor",
-        "bin-dir": ".Build/bin"
+        "bin-dir": ".build/bin",
+        "vendor-dir": ".build/vendor"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "cart_paypal",
+            "app-dir": ".build",
+            "web-dir": ".build/public"
+        }
+    },
+    "require": {
+        "php": ">=7.2.0 <7.5",
+        "ext-curl": "*",
+        "typo3/cms-core": "^10.4",
+        "typo3/cms-extbase": "^10.4",
+        "typo3/cms-frontend": "^10.4",
+        "extcode/cart": "^7.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.14",
+        "helmich/typo3-typoscript-lint": "^2.0",
+        "overtrue/phplint": "^1.1"
     },
     "scripts": {
+        "cgl:test": [
+            ".build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --dry-run --using-cache=no --path-mode=intersection ./"
+        ],
+        "cgl:fix": [
+            ".build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --using-cache=no --path-mode=intersection ./"
+        ],
+        "php:lint": [
+            ".build/bin/phplint -c Build/phplint.yaml"
+        ],
+        "typoscript:lint": [
+            ".build/bin/typoscript-lint -c Build/typoscriptlint.yaml Configuration"
+        ],
+        "test:all": [
+            "@cgl:test",
+            "@typoscript:lint",
+            "@php:lint"
+        ],
         "post-autoload-dump": [
             "mkdir -p .Build/Web/typo3conf/ext/",
             "[ -L .Build/Web/typo3conf/ext/cart_paypal ] || ln -snvf ../../../../. .Build/Web/typo3conf/ext/cart_paypal"
         ]
-    },
-    "extra": {
-        "typo3/cms": {
-            "cms-package-dir": "{$vendor-dir}/typo3/cms",
-            "web-dir": ".Build/Web"
-        }
     }
 }

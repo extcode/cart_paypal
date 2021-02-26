@@ -17,11 +17,11 @@ $EM_CONF['cart_paypal'] = [
     'modify_tables' => '',
     'clearCacheOnLoad' => 0,
     'lockType' => '',
-    'version' => '4.0.2',
+    'version' => '5.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '9.5.0-9.5.99',
-            'cart' => '6.3.0',
+            'typo3' => '10.4.0-10.4.99',
+            'cart' => '7.4.0',
         ],
         'conflicts' => [],
         'suggests' => [],

@@ -1,0 +1,42 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  Extcode\CartPaypal\:
+    resource: '../Classes/*'
+    exclude: '../Classes/Widgets/*'
+
+  Extcode\CartPaypal\Controller\Order\PaymentController:
+    arguments:
+      $logManager: '@TYPO3\CMS\Core\Log\LogManager'
+      $persistenceManager: '@TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager'
+      $sessionHandler: '@Extcode\Cart\Service\SessionHandler'
+      $cartRepository: '@Extcode\Cart\Domain\Repository\CartRepository'
+      $paymentRepository: '@Extcode\Cart\Domain\Repository\Order\PaymentRepository'
+
+  Extcode\CartPaypal\EventListener\Order\Payment\ClearCart:
+    tags:
+      - name: event.listener
+        identifier: 'cart-paypal--order--payment--clear-cart'
+        event: Extcode\Cart\Event\Order\PaymentEvent
+        before: 'cart-paypal--order--payment--provider-redirect'
+
+  Extcode\CartPaypal\EventListener\Order\Payment\ProviderRedirect:
+    arguments:
+      $configurationManager: '@TYPO3\CMS\Extbase\Configuration\ConfigurationManager'
+      $persistenceManager: '@TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager'
+      $typoScriptService: '@TYPO3\CMS\Core\TypoScript\TypoScriptService'
+      $cartRepository: '@Extcode\Cart\Domain\Repository\CartRepository'
+    tags:
+      - name: event.listener
+        identifier: 'cart-paypal--order--payment--provider-redirect'
+        event: Extcode\Cart\Event\Order\PaymentEvent
+
+  Extcode\CartPaypal\EventListener\Order\Notify\Email:
+    class: 'Extcode\Cart\EventListener\ProcessOrderCreate\Email'
+    tags:
+      - name: event.listener
+        identifier: 'cart-paypal--order--notify--email'
+        event: Extcode\CartPaypal\Event\Order\NotifyEvent
