@@ -30,11 +30,12 @@ and database!** If possible test the update in a test copy of your TYPO3 instanc
 
 ## 3.1 Compatibility and supported Versions
 
-| Cart          | TYPO3      | PHP       | Support/Development                     |
+| Cart PayPal   | TYPO3      | PHP       | Support/Development                     |
 | ------------- | ---------- | ----------|---------------------------------------- |
-| 4.x.x         | 9.5        | 7.2       | Features, Bugfixes, Security Updates    |
-| 3.x.x         | 8.7        | 7.0 - 7.2 | Features _(in certain circumstances with feature toogle)_, Bugfixes, Security Updates    |
-| 2.x.x         | 6.2 - 8.7  | 5.6 - 7.0 | Bugfixes, Security Updates                        |
+| 5.x.x         | 10.4       | 7.2 - 7.4 | Features, Bugfixes, Security Updates    |
+| 4.x.x         | 9.5        | 7.2 - 7.4 | Bugfixes, Security Updates              |
+| 3.x.x         | 8.7        | 7.0 - 7.4 | Bugfixes, Security Updates              |
+| 2.x.x         | 6.2 - 8.7  | 5.6 - 7.0 | Bugfixes, Security Updates              |
 | 1.x.x         |            |           |                                         |
 
 ### 3.2. Changelog
@@ -50,9 +51,10 @@ News uses **semantic versioning** which basically means for you, that
 
 ## 4. Sponsoring
 
-*  Ask for an invoice.
-*  [Patreon](https://patreon.com/ext_cart)
-*  [PayPal.Me](https://paypal.me/extcart)
+* Ask for an invoice.
+* [GitHub Sponsors](https://github.com/sponsors/extcode)
+* [PayPal.Me](https://paypal.me/extcart)
+* [Patreon](https://patreon.com/ext_cart)
 
 [1]: https://docs.typo3.org/typo3cms/extensions/cart_paypal/
 [2]: https://getcomposer.org/
