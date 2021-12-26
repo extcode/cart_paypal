@@ -11,7 +11,7 @@ namespace Extcode\CartPaypal\EventListener\Order\Payment;
 
 use Extcode\Cart\Event\Order\EventInterface;
 
-class ClearCart extends \Extcode\Cart\EventListener\ProcessOrderCreate\ClearCart
+class ClearCart extends \Extcode\Cart\EventListener\Order\Finish\ClearCart
 {
     public function __invoke(EventInterface $event): void
     {
@@ -19,7 +19,7 @@ class ClearCart extends \Extcode\Cart\EventListener\ProcessOrderCreate\ClearCart
 
         $provider = $orderItem->getPayment()->getProvider();
 
-        if (strpos($provider, 'PAYPAL') === 0) {
+        if ((strpos($provider, 'PAYPAL') === 0) || (strpos($provider, 'PAYPAL_CREDIT_CARD') === 0)) {
             parent::__invoke($event);
         }
     }

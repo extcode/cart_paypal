@@ -17,6 +17,10 @@ services:
       $paymentRepository: '@Extcode\Cart\Domain\Repository\Order\PaymentRepository'
 
   Extcode\CartPaypal\EventListener\Order\Payment\ClearCart:
+    arguments:
+      $cartUtility: '@Extcode\Cart\Utility\CartUtility'
+      $parserUtility: '@Extcode\Cart\Utility\ParserUtility'
+      $sessionHandler: '@Extcode\Cart\Service\SessionHandler'
     tags:
       - name: event.listener
         identifier: 'cart-paypal--order--payment--clear-cart'
@@ -35,8 +39,9 @@ services:
         event: Extcode\Cart\Event\Order\PaymentEvent
 
   Extcode\CartPaypal\EventListener\Order\Notify\Email:
-    class: 'Extcode\Cart\EventListener\ProcessOrderCreate\Email'
+    class: 'Extcode\Cart\EventListener\Order\Finish\Email'
     tags:
       - name: event.listener
         identifier: 'cart-paypal--order--notify--email'
         event: Extcode\CartPaypal\Event\Order\NotifyEvent
+

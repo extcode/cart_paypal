@@ -160,7 +160,7 @@ class PaymentController extends ActionController
                 $cancelEvent = new CancelEvent($this->cart->getCart(), $orderItem, $this->cartConf);
                 $this->eventDispatcher->dispatch($cancelEvent);
 
-                $this->redirect('show', 'Cart\Cart', 'Cart');
+                $this->redirect('show', 'Cart\Cart', 'Cart', ['cart' => $this->cart,'billingAddress' => $orderItem->getBillingAddress(), 'shippingAddress' => $orderItem->getShippingAddress()]);
             } else {
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
