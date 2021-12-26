@@ -20,7 +20,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
 use TYPO3\CMS\Extbase\Mvc\Web\Routing\UriBuilder;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
-use TYPO3\CMS\Core\Log\LogManager;
 
 class ProviderRedirect
 {
@@ -86,11 +85,6 @@ class ProviderRedirect
      * @var array
      */
     protected $cartConf = [];
-    
-    /**
-     * @var logger
-     */
-    protected $logger;
 
     public function __construct(
         ConfigurationManager $configurationManager,
@@ -104,8 +98,6 @@ class ProviderRedirect
         $this->typoScriptService = $typoScriptService;
         $this->uriBuilder = $uriBuilder;
         $this->cartRepository = $cartRepository;
-
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
 
         $this->cartConf = $this->configurationManager->getConfiguration(
             ConfigurationManager::CONFIGURATION_TYPE_FRAMEWORK,
@@ -121,8 +113,8 @@ class ProviderRedirect
     public function __invoke(PaymentEvent $event): void
     {
         $this->orderItem = $event->getOrderItem();
-        if ($this->orderItem->getPayment()->getProvider() !== 'PAYPAL' &&
-            $this->orderItem->getPayment()->getProvider() !== 'PAYPAL_CREDIT_CARD') {
+
+        if ($this->orderItem->getPayment()->getProvider() !== 'PAYPAL') {
             return;
         }
 
@@ -185,35 +177,6 @@ class ProviderRedirect
         $this->paymentQuery['upload'] = '1';
 
         $this->paymentQuery['currency_code'] = $this->orderItem->getCurrencyCode();
-
-        if (strpos($this->orderItem->getPayment()->getProvider(), 'PAYPAL_CREDIT_CARD') === 0)
-           $this->paymentQuery['landing_page'] = 'billing';
-        
-        $selectedCountry = $this->orderItem->getBillingAddress()->getCountry();
-        foreach($this->cartPaypalConf['regionMappings'] as $locale => $countryMapping)
-        {
-            if (strpos($selectedCountry, $locale) === 0)
-            {
-                $localeAndCountryArray = explode(',', $countryMapping);
-                
-                $this->paymentQuery['lc'] = $localeAndCountryArray[1];
-                $this->paymentQuery['country_code'] = $localeAndCountryArray[0];
-                $this->logger->info("selected locale: " . $locale . " --> lc: " . $localeAndCountryArray[1] . ", country_code: " . $localeAndCountryArray[0]);
-            }
-        }
-        
-        if ($this->cartPaypalConf['logo'])
-        {
-            $site = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Site\SiteFinder::class)->getSiteByPageId((int)$this->cartConf['settings']['order']['pid']);
-            $logoUrl =  $site->getBase() . "/" . $this->cartPaypalConf['logo'];
-            $this->logger->info($logoUrl);
-            $this->paymentQuery['image_url'] = $logoUrl;
-        }
-        
-        if ($this->cartPaypalConf['displayShippingAddress'])
-            $this->paymentQuery['no_shipping'] = '0';
-        else
-            $this->paymentQuery['no_shipping'] = '1';
     }
 
     protected function getQueryFromCart(): void

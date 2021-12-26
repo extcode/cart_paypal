@@ -16,24 +16,11 @@ The plugin needs to know the merchant e-mail address.
 ::
 
    plugin.tx_cartpaypal {
-        sandbox = 1
-        business = pp-wt-merchant@extco.de
-        debug = 1
-        displayShippingAddress = 1
-        logo = fileadmin/cart/somelogo.png
-        regionMappings {
-            at = at,AT
-            de = de,DE
-            ch = ch,CH
-            be = be,BE
-            fr = fr,FR
-            it = it,IT
-            lu = lu,LU
-            nl = nl,NL
-            sk = sk,SK
-            si = si,SI
-        }
+       sandbox = 1
+       business = pp-wt-merchant@extco.de
+       debug = 1
    }
+
 |
 
 .. container:: table-row
@@ -64,34 +51,3 @@ The plugin needs to know the merchant e-mail address.
          boolean
    Description
          Enables the logging for some debug messages.
-         
-.. container:: table-row
-
-   Property
-         plugin.tx_cartpaypal.displayShippingAddress
-   Data type
-         boolean
-   Description
-         Defines if Paypal shall display the shipping address form fields or not (Paypal variable no_shipping).
-
-.. container:: table-row
-
-   Property
-         plugin.tx_cartpaypal.logo
-   Data type
-         string
-   Description
-         Defines the path to a logo being displayed by Paypal. Supported formats are GIF, JPG, PNG with a max of 50KB and dimensions of max 750px width and 90px height.
-
-.. container:: table-row
-
-   Property
-         plugin.tx_cartpaypal.regionMappings
-   Data type
-         array
-   Description
-         Defines the country code and locale being pre-selected in Paypal according to the user-selected target shipment country
-         (e.g. user selects the Netherlands as target shipment country it makes sense to already pre-select nl,NL as country code and locale)
-         Left hand is the list of allowed countries as defined for tx_cart (plugin.tx_cart.settings.allowedCountries), right hand side is the combination of country code and locale as defined by Paypal)
-         Example: en = en,GB --> country code = en, locale = GB
-         In case no related regionMapping can be found, default bahvior of Paypal is used.
