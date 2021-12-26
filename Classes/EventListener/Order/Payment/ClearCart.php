@@ -13,15 +13,6 @@ use Extcode\Cart\Event\Order\EventInterface;
 
 class ClearCart extends \Extcode\Cart\EventListener\Order\Finish\ClearCart
 {
-    public function __construct(
-        CartUtility $cartUtility,
-        ParserUtility $parserUtility,
-        SessionHandler $sessionHandler)
-    {
-        // call Grandpa's constructor
-        parent::__construct($cartUtility, $parserUtility, $sessionHandler);
-    }
-    
     public function __invoke(EventInterface $event): void
     {
         $orderItem = $event->getOrderItem();
