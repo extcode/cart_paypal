@@ -38,9 +38,10 @@ services:
         identifier: 'cart-paypal--order--payment--provider-redirect'
         event: Extcode\Cart\Event\Order\PaymentEvent
 
-  Extcode\Cart\EventListener\Order\Finish\Email:
+  Extcode\CartPaypal\EventListener\Order\Notify\Email:
     class: 'Extcode\Cart\EventListener\Order\Finish\Email'
     tags:
       - name: event.listener
-        identifier: 'cart-paypal--order--success--email'
-        event: Extcode\CartPaypal\Event\Order\SuccessEvent
+        identifier: 'cart-paypal--order--notify--email'
+        event: Extcode\CartPaypal\Event\Order\NotifyEvent
+
