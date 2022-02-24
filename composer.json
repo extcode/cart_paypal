@@ -12,6 +12,7 @@
         "PayPal",
         "cart"
     ],
+    "version": "5.1.0",
     "authors": [
         {
             "name": "Daniel Gohlke",
@@ -41,10 +42,10 @@
     "require": {
         "php": ">=7.2.0 <7.5",
         "ext-curl": "*",
-        "typo3/cms-core": "^10.4",
-        "typo3/cms-extbase": "^10.4",
-        "typo3/cms-frontend": "^10.4",
-        "extcode/cart": "^7.4"
+        "typo3/cms-core": "^11.5",
+        "typo3/cms-extbase": "^11.5",
+        "typo3/cms-frontend": "^11.5",
+        "extcode/cart": "^8.0"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2.14",
