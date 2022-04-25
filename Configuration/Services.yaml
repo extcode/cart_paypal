@@ -39,7 +39,7 @@ services:
         event: Extcode\Cart\Event\Order\PaymentEvent
 
   Extcode\CartPaypal\EventListener\Order\Notify\Email:
-    class: 'Extcode\Cart\EventListener\ProcessOrderCreate\Email'
+    class: 'Extcode\Cart\EventListener\Order\Finish\Email'
     tags:
       - name: event.listener
         identifier: 'cart-paypal--order--notify--email'
