@@ -183,11 +183,10 @@ class PaymentController extends ActionController
         }
     }
 
-    public function notifyAction(): void
+    public function notifyAction()
     {
         if ($this->request->getMethod() !== 'POST') {
-            $this->response->setStatus(405);
-            exit();
+            return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
         }
 
         $postData = GeneralUtility::_POST();
@@ -208,15 +207,13 @@ class PaymentController extends ActionController
 
         $cartSHash = $postData['custom'];
         if (empty($cartSHash)) {
-            $this->response->setStatus(403);
-            exit();
+            return $this->htmlResponse()->withStatus(403, 'Not allowed.');
         }
 
         $this->loadCartByHash($this->request->getArgument('hash'));
 
         if ($this->cart === null) {
-            $this->response->setStatus(404);
-            exit();
+            return $this->htmlResponse()->withStatus(404, 'Page / Cart not found.');
         }
 
         $orderItem = $this->cart->getOrderItem();
@@ -231,8 +228,7 @@ class PaymentController extends ActionController
             $this->eventDispatcher->dispatch($notifyEvent);
         }
 
-        $this->response->setStatus(200);
-        exit();
+        return $this->htmlResponse()->withStatus(200);
     }
 
     protected function restoreCartSession(): void
