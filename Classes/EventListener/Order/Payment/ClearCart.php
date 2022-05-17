@@ -10,9 +10,20 @@ namespace Extcode\CartPaypal\EventListener\Order\Payment;
  */
 
 use Extcode\Cart\Event\Order\EventInterface;
+use Extcode\Cart\Service\SessionHandler;
+use Extcode\Cart\Utility\CartUtility;
+use Extcode\Cart\Utility\ParserUtility;
 
-class ClearCart extends \Extcode\Cart\EventListener\ProcessOrderCreate\ClearCart
+class ClearCart extends \Extcode\Cart\EventListener\Order\Finish\ClearCart
 {
+    public function __construct(
+        CartUtility $cartUtility,
+        ParserUtility $parserUtility,
+        SessionHandler $sessionHandler
+    ) {
+        parent::__construct($cartUtility, $parserUtility, $sessionHandler);
+    }
+
     public function __invoke(EventInterface $event): void
     {
         $orderItem = $event->getOrderItem();
