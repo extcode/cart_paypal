@@ -274,7 +274,7 @@ class PaymentController extends ActionController
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
 
-        $this->curlResult = strtolower(curl_exec($ch));
+        $curlResult = strtolower(curl_exec($ch));
         $curlError = curl_errno($ch);
 
         if ($curlError !== 0) {
@@ -284,7 +284,7 @@ class PaymentController extends ActionController
                     'ERROR' => 'Can\'t connect to PayPal to validate IPN message',
                     'curl_error' => curl_error($ch),
                     'curl_request' => $curlRequest,
-                    'curl_result' => $this->curlResult,
+                    'curl_result' => $curlResult,
                 ]
             );
 
@@ -298,12 +298,12 @@ class PaymentController extends ActionController
                 [
                     'curl_info' => curl_getinfo($ch, CURLINFO_HEADER_OUT),
                     'curl_request' => $curlRequest,
-                    'curl_result' => $this->curlResult,
+                    'curl_result' => $curlResult,
                 ]
             );
         }
 
-        $this->curlResults = explode("\r\n\r\n", $this->curlResult);
+        $curlResults = explode("\r\n\r\n", $curlResult);
 
         curl_close($ch);
 

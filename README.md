@@ -30,17 +30,18 @@ and database!** If possible test the update in a test copy of your TYPO3 instanc
 
 ## 3.1 Compatibility and supported Versions
 
-| Cart PayPal   | TYPO3      | PHP       | Support/Development                     |
-| ------------- | ---------- | ----------|---------------------------------------- |
-| 5.x.x         | 10.4       | 7.2 - 7.4 | Features, Bugfixes, Security Updates    |
-| 4.x.x         | 9.5        | 7.2 - 7.4 | Bugfixes, Security Updates              |
-| 3.x.x         | 8.7        | 7.0 - 7.4 | Security Updates                        |
-| 2.x.x         | 6.2 - 8.7  | 5.6 - 7.0 | Security Updates                        |
-| 1.x.x         |            |           |                                         |
+| Cart PayPal   | TYPO3      | PHP       | Support/Development                  |
+|---------------| ---------- | ----------|--------------------------------------|
+| 6.x.x         | 10.4, 11.5 | 7.2+      | Features, Bugfixes, Security Updates |
+| 5.x.x         | 10.4       | 7.2 - 7.4 | Bugfixes, Security Updates           |
+| 4.x.x         | 9.5        | 7.2 - 7.4 | Security Updates                     |
+| 3.x.x         | 8.7        | 7.0 - 7.4 |                                      |
+| 2.x.x         | 6.2 - 8.7  | 5.6 - 7.0 |                                      |
+| 1.x.x         |            |           |                                      |
 
 ### 3.2. Changelog
 
-Please have a look into the [official extension documentation in changelog chapter](https://docs.typo3.org/typo3cms/extensions/cart_paypal/Changelog/Index.html)
+Please have a look into the [official extension documentation in changelog chapter](https://docs.typo3.org/p/extcode/cart_paypal/main/en-us/Changelog/Index.html)
 
 ### 3.3. Release Management
 

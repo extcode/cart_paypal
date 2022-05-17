@@ -40,7 +40,7 @@ lint:yaml:
   before_script:
     - pip install yamllint==1.10.0
   script:
-    - yamllint -c Build/yamllint.yaml Configuration/ Resources/ .travis.yml
+    - yamllint -c Build/yamllint.yaml Configuration/ Resources/
 
 lint:php72:
   stage: lint
@@ -59,6 +59,27 @@ lint:php74:
   image: php:7.4-alpine
   script:
     - find . -name \*.php -exec php -l "{}" \;
+
+lint:php80:
+  stage: lint
+  image: php:8.0-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+
+lint:php81:
+  stage: lint
+  image: php:8.1-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+
+phpstan:analyse:
+  image: composer:2
+  stage: lint
+  before_script:
+    - composer config platform.php 7.4
+    - composer install --no-progress --no-ansi --no-interaction
+  script:
+    - .build/bin/phpstan analyse -c Build/phpstan.neon
 
 documentation:
   stage: documentation
@@ -89,7 +110,7 @@ sonarqube:
     SONAR_SOURCES: "./Classes"
     SONAR_GITLAB_PROJECT_ID: "$CI_PROJECT_ID"
   script:
-    - echo "sonar.projectKey=cart_paypal-5.x" > sonar-project.properties
+    - echo "sonar.projectKey=cart_paypal-6.x" > sonar-project.properties
     - gitlab-sonar-scanner -Dsonar.php.coverage.reportPath=phpunit.coverage.xml -Dsonar.php.tests.reportPath=phpunit.report.xml
   allow_failure: true
 
@@ -105,5 +126,5 @@ sonarqube-reports:
     SONAR_SOURCES: "./Classes"
     SONAR_TESTS: "./Tests"
   script:
-    - echo "sonar.projectKey=cart_paypal-5.x" > sonar-project.properties
+    - echo "sonar.projectKey=cart_paypal-6.x" > sonar-project.properties
     - gitlab-sonar-scanner -Dsonar.php.coverage.reportPath=phpunit.coverage.xml -Dsonar.php.tests.reportPath=phpunit.report.xml
