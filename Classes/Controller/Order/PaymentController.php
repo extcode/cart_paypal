@@ -186,6 +186,11 @@ class PaymentController extends ActionController
     public function notifyAction()
     {
         if ($this->request->getMethod() !== 'POST') {
+            // exit with Status Code in TYPO3 v10.4
+            if (isset($this->response)) {
+                $this->response->setStatus(405);
+                exit();
+            }
             return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
         }
 
@@ -207,12 +212,22 @@ class PaymentController extends ActionController
 
         $cartSHash = $postData['custom'];
         if (empty($cartSHash)) {
+            // exit with Status Code in TYPO3 v10.4
+            if (isset($this->response)) {
+                $this->response->setStatus(403);
+                exit();
+            }
             return $this->htmlResponse()->withStatus(403, 'Not allowed.');
         }
 
         $this->loadCartByHash($this->request->getArgument('hash'));
 
         if ($this->cart === null) {
+            // exit with Status Code in TYPO3 v10.4
+            if (isset($this->response)) {
+                $this->response->setStatus(404);
+                exit();
+            }
             return $this->htmlResponse()->withStatus(404, 'Page / Cart not found.');
         }
 
@@ -228,6 +243,11 @@ class PaymentController extends ActionController
             $this->eventDispatcher->dispatch($notifyEvent);
         }
 
+        // exit with Status Code in TYPO3 v10.4
+        if (isset($this->response)) {
+            $this->response->setStatus(200);
+            exit();
+        }
         return $this->htmlResponse()->withStatus(200);
     }
 
