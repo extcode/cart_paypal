@@ -16,7 +16,9 @@ use Extcode\Cart\Service\SessionHandler;
 use Extcode\CartPaypal\Event\Order\CancelEvent;
 use Extcode\CartPaypal\Event\Order\NotifyEvent;
 use Extcode\CartPaypal\Event\Order\SuccessEvent;
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Log\LogManagerInterface;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,6 +30,8 @@ use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
 
 class PaymentController extends ActionController
 {
+    use LoggerAwareTrait;
+
     const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
     const PAYPAL_API_LIVE = 'https://www.paypal.com/cgi-bin/webscr?';
 
@@ -78,7 +82,8 @@ class PaymentController extends ActionController
         CartRepository $cartRepository,
         PaymentRepository $paymentRepository
     ) {
-        $this->logger = $logManager->getLogger();
+        // $this->logger = $logManager->getLogger();
+        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
         $this->persistenceManager = $persistenceManager;
         $this->sessionHandler = $sessionHandler;
         $this->cartRepository = $cartRepository;
@@ -186,6 +191,14 @@ class PaymentController extends ActionController
     public function notifyAction()
     {
         if ($this->request->getMethod() !== 'POST') {
+            if ($this->cartPaypalConf['debug']) {
+                $this->logger->error(
+                    'Notify Action called without Post vars. ' . ' In class ' . get_class($this) . ':' . __LINE__,
+                    [
+                        'order' => ((!empty($_GET['tx_cartpaypal_cart']['order'])) ? $_GET['tx_cartpaypal_cart']['order'] : 'No order ID given')
+                    ]
+                );
+            }
             return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
         }
 
@@ -194,7 +207,7 @@ class PaymentController extends ActionController
         $curlRequest = $this->getCurlRequestFromPostData($postData);
 
         if ($this->cartPaypalConf['debug']) {
-            $this->logger->debug(
+            $this->logger->error(
                 'Log Data',
                 [
                     '$parsedPostData' => $postData,
@@ -207,12 +220,36 @@ class PaymentController extends ActionController
 
         $cartSHash = $postData['custom'];
         if (empty($cartSHash)) {
+            // debug
+            if ($this->cartPaypalConf['debug']) {
+                $this->logger->error(
+                    'Notify Action called with empty cartSHash. ' . ' In class ' . get_class($this) . ':' . __LINE__,
+                    [
+                        'order' => ((!empty($_GET['tx_cartpaypal_cart']['order'])) ? $_GET['tx_cartpaypal_cart']['order'] : 'No order ID given'),
+                        '$parsedPostData' => $postData,
+                        '$curlRequest' => $curlRequest
+                    ]
+                );
+            }
+            // end debug
             return $this->htmlResponse()->withStatus(403, 'Not allowed.');
         }
 
         $this->loadCartByHash($this->request->getArgument('hash'));
 
         if ($this->cart === null) {
+            // debug
+            if ($this->cartPaypalConf['debug']) {
+                $this->logger->error(
+                    'Notify Action but couldn`t load cart by hash. ' . ' In class ' . get_class($this) . ':' . __LINE__,
+                    [
+                        'order' => ((!empty($_GET['tx_cartpaypal_cart']['order'])) ? $_GET['tx_cartpaypal_cart']['order'] : 'No order ID given'),
+                        '$parsedPostData' => $postData,
+                        '$curlRequest' => $curlRequest
+                    ]
+                );
+            }
+            // end debug
             return $this->htmlResponse()->withStatus(404, 'Page / Cart not found.');
         }
 
@@ -226,6 +263,19 @@ class PaymentController extends ActionController
 
             $notifyEvent = new NotifyEvent($this->cart->getCart(), $orderItem, $this->cartConf);
             $this->eventDispatcher->dispatch($notifyEvent);
+        } else {
+            // debug
+            if ($this->cartPaypalConf['debug']) {
+                $this->logger->error(
+                    'Notify Action success. ' . ' In class ' . get_class($this) . ':' . __LINE__,
+                    [
+                        'order' => ((!empty($_GET['tx_cartpaypal_cart']['order'])) ? $_GET['tx_cartpaypal_cart']['order'] : 'No order ID given'),
+                        '$parsedPostData' => $postData,
+                        '$curlRequest' => $curlRequest
+                    ]
+                );
+            }
+            // end debug
         }
 
         return $this->htmlResponse()->withStatus(200);
@@ -293,7 +343,7 @@ class PaymentController extends ActionController
         }
 
         if ($this->cartPaypalConf['debug']) {
-            $this->logger->debug(
+            $this->logger->error(
                 'paypal-payment-api',
                 [
                     'curl_info' => curl_getinfo($ch, CURLINFO_HEADER_OUT),
