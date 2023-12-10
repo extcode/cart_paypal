@@ -12,6 +12,7 @@ namespace Extcode\CartPaypal\EventListener\Order\Payment;
 use Extcode\Cart\Domain\Model\Cart;
 use Extcode\Cart\Domain\Model\Cart\Cart as CartCart;
 use Extcode\Cart\Domain\Model\Cart\CartCoupon;
+use Extcode\Cart\Domain\Model\Cart\CartCouponPercentage;
 use Extcode\Cart\Domain\Model\Order\Item as OrderItem;
 use Extcode\Cart\Domain\Repository\CartRepository;
 use Extcode\Cart\Event\Order\PaymentEvent;
@@ -229,7 +230,12 @@ class ProviderRedirect
              */
             foreach ($this->cart->getCoupons() as $cartCoupon) {
                 if ($cartCoupon->getIsUseable()) {
-                    $discount += $cartCoupon->getDiscount();
+                    // A.K.: Differentiate between percentage and fixed discount
+                    if ($cartCoupon instanceof CartCouponPercentage) {
+                        $discount += (float)($this->orderItem->getGross() * $cartCoupon->getDiscount());
+                    } else {
+                        $discount += $cartCoupon->getDiscount();
+                    }
                 }
             }
 
