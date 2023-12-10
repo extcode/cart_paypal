@@ -11,7 +11,7 @@ $EM_CONF['cart_paypal'] = [
     'version' => '5.0.0',
     'constraints' => [
         'depends' => [
-            'typo3' => '10.4.0-10.4.99',
+            'typo3' => '11.5.0-11.5.99',
             'cart' => '7.4.0',
         ],
         'conflicts' => [],

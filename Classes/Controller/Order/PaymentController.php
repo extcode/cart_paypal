@@ -71,6 +71,16 @@ class PaymentController extends ActionController
     protected $cartConf = [];
 
     /**
+     * @var string|bool
+     */
+    protected $curlResult;
+
+    /**
+     * @var array
+     */
+    protected $curlResults;
+
+    /**
      * @var array
      */
     protected $cartPaypalConf = [];
