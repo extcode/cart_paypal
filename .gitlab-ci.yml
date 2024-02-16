@@ -72,6 +72,18 @@ lint:php81:
   script:
     - find . -name \*.php -exec php -l "{}" \;
 
+lint:php82:
+  stage: lint
+  image: php:8.2-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+
+lint:php83:
+  stage: lint
+  image: php:8.3-alpine
+  script:
+    - find . -name \*.php -exec php -l "{}" \;
+
 phpstan:analyse:
   image: composer:2
   stage: lint
