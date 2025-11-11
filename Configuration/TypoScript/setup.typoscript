@@ -1,23 +1,24 @@
 cartPayPal = PAGE
 cartPayPal {
-    typeNum = {$plugin.tx_cartpaypal.redirectTypeNum}
+  typeNum = {$plugin.tx_cartpaypal.redirectTypeNum}
 
-    config {
-        disableAllHeaderCode = 1
-        xhtml_cleaning = 0
-        admPanel = 0
-        debug = 0
-        no_cache = 1
-    }
+  config {
+    disableAllHeaderCode = 1
+    xhtml_cleaning = 0
+    admPanel = 0
+    debug = 0
+    no_cache = 1
+  }
 
-    10 < tt_content.list.20.cartpaypal_cart
-    10.features.requireCHashArgumentForActionArguments = 0
+  10 < tt_content.cartpaypal_cart.20
+  10.features.requireCHashArgumentForActionArguments = 0
+
 }
 
 plugin.tx_cartpaypal {
-    sandbox = 1
+  sandbox = 1
 
-    redirectTypeNum = {$plugin.tx_cartpaypal.redirectTypeNum}
+  redirectTypeNum = {$plugin.tx_cartpaypal.redirectTypeNum}
 
-    sendEachItemToPaypal = 1
+  sendEachItemToPaypal = 1
 }

@@ -2,19 +2,15 @@
 declare(strict_types=1);
 namespace Extcode\CartPaypal\EventListener\Order\Payment;
 
-/*
- * This file is part of the package extcode/cart-paypal.
- *
- * For the full copyright and license information, please read the
- * LICENSE file that was distributed with this source code.
- */
-
 use Extcode\Cart\Domain\Model\Cart;
 use Extcode\Cart\Domain\Model\Cart\Cart as CartCart;
 use Extcode\Cart\Domain\Model\Cart\CartCoupon;
 use Extcode\Cart\Domain\Model\Order\Item as OrderItem;
 use Extcode\Cart\Domain\Repository\CartRepository;
 use Extcode\Cart\Event\Order\PaymentEvent;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Core\Http\ApplicationType;
+use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Configuration\ConfigurationManager;
@@ -26,77 +22,27 @@ class ProviderRedirect
     const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
     const PAYPAL_API_LIVE = 'https://www.paypal.com/cgi-bin/webscr?';
 
-    /**
-     * @var ConfigurationManager
-     */
-    protected $configurationManager;
-
-    /**
-     * @var PersistenceManager
-     */
-    protected $persistenceManager;
-
-    /**
-     * @var TypoScriptService
-     */
-    protected $typoScriptService;
-
-    /**
-     * @var UriBuilder
-     */
-    protected $uriBuilder;
-
-    /**
-     * @var CartRepository
-     */
-    protected $cartRepository;
-
-    /**
-     * @var array
-     */
-    protected $paymentQuery = [];
-
-    /**
-     * @var OrderItem
-     */
-    protected $orderItem;
-
-    /**
-     * @var CartCart
-     */
-    protected $cart;
-
-    /**
-     * @var string
-     */
-    protected $cartSHash = '';
-
-    /**
-     * @var string
-     */
-    protected $cartFHash = '';
-
-    /**
-     * @var array
-     */
-    protected $cartPaypalConf = [];
-
-    /**
-     * @var array
-     */
-    protected $cartConf = [];
+    protected ConfigurationManager $configurationManager;
+    protected PersistenceManager $persistenceManager;
+    protected TypoScriptService $typoScriptService;
+    protected CartRepository $cartRepository;
+    protected array $paymentQuery = [];
+    protected OrderItem $orderItem;
+    protected CartCart $cart;
+    protected string $cartSHash = '';
+    protected string $cartFHash = '';
+    protected array $cartPaypalConf = [];
+    protected array $cartConf = [];
 
     public function __construct(
         ConfigurationManager $configurationManager,
         PersistenceManager $persistenceManager,
         TypoScriptService $typoScriptService,
-        UriBuilder $uriBuilder,
         CartRepository $cartRepository
     ) {
         $this->configurationManager = $configurationManager;
         $this->persistenceManager = $persistenceManager;
         $this->typoScriptService = $typoScriptService;
-        $this->uriBuilder = $uriBuilder;
         $this->cartRepository = $cartRepository;
 
         $this->cartConf = $this->configurationManager->getConfiguration(
@@ -119,7 +65,6 @@ class ProviderRedirect
         }
 
         $this->cart = $event->getCart();
-
         $cart = $this->saveCurrentCartToDatabase();
 
         $this->cartSHash = $cart->getSHash();
@@ -128,9 +73,11 @@ class ProviderRedirect
         $this->getQuery();
 
         $paymentQueryString = http_build_query($this->paymentQuery);
+		
+		#echo  $this->getQueryUrl() .' '. $paymentQueryString;
+		#exit;
         header('Location: ' . $this->getQueryUrl() . $paymentQueryString);
-
-        $event->setPropagationStopped(true);
+        exit;
     }
 
     protected function saveCurrentCartToDatabase(): Cart
@@ -274,7 +221,6 @@ class ProviderRedirect
     protected function getUrl(string $action, string $hash): string
     {
         $pid = (int)$this->cartConf['settings']['cart']['pid'];
-
         $arguments = [
             'tx_cartpaypal_cart' => [
                 'controller' => 'Order\Payment',
@@ -284,11 +230,15 @@ class ProviderRedirect
             ]
         ];
 
-        return $this->uriBuilder->reset()
-            ->setTargetPageUid($pid)
-            ->setTargetPageType((int)$this->cartPaypalConf['redirectTypeNum'])
-            ->setCreateAbsoluteUri(true)
-            ->setArguments($arguments)
-            ->build();
+        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
+        $site = $siteFinder->getSiteByPageId($pid);
+        
+        return (string)$site->getRouter()->generateUri(
+            $pid,
+            [
+                'type' => (int)$this->cartPaypalConf['redirectTypeNum'],
+                '_language' => $GLOBALS['TYPO3_REQUEST']->getAttribute('language')->getLanguageId(),
+            ] + $arguments
+        );
     }
 }

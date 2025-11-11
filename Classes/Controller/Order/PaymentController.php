@@ -17,6 +17,7 @@ use Extcode\CartPaypal\Event\Order\CancelEvent;
 use Extcode\CartPaypal\Event\Order\NotifyEvent;
 use Extcode\CartPaypal\Event\Order\SuccessEvent;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Log\LogManagerInterface;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -100,7 +101,7 @@ class PaymentController extends ActionController
             );
     }
 
-    public function successAction(): void
+    public function successAction(): ResponseInterface
     {
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
             $this->loadCartByHash($this->request->getArgument('hash'));
@@ -111,30 +112,30 @@ class PaymentController extends ActionController
                 $successEvent = new SuccessEvent($this->cart->getCart(), $orderItem, $this->cartConf);
                 $this->eventDispatcher->dispatch($successEvent);
 
-                $this->redirect('show', 'Cart\Order', 'Cart', ['orderItem' => $orderItem]);
+                return $this->redirect('show', 'Cart\Order', 'Cart', ['orderItem' => $orderItem]);
             } else {
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.success.error_occured',
-                        'cart_paypal'
+                        'CartPaypal'
                     ),
                     '',
-                    AbstractMessage::ERROR
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
                 );
             }
         } else {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_cartpaypal.controller.order.payment.action.success.access_denied',
-                    'cart_paypal'
+                    'CartPaypal'
                 ),
                 '',
-                AbstractMessage::ERROR
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
         }
     }
 
-    public function cancelAction(): void
+    public function cancelAction(): ResponseInterface
     {
         if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
             $this->loadCartByHash($this->request->getArgument('hash'), 'FHash');
@@ -153,39 +154,40 @@ class PaymentController extends ActionController
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.cancel.successfully_canceled',
-                        'cart_paypal'
+                        'CartPaypal'
                     )
                 );
 
                 $cancelEvent = new CancelEvent($this->cart->getCart(), $orderItem, $this->cartConf);
                 $this->eventDispatcher->dispatch($cancelEvent);
 
-                $this->redirect('show', 'Cart\Cart', 'Cart');
+                return $this->redirect('show', 'Cart\Cart', 'Cart');
             } else {
                 $this->addFlashMessage(
                     LocalizationUtility::translate(
                         'tx_cartpaypal.controller.order.payment.action.cancel.error_occured',
-                        'cart_paypal'
+                        'CartPaypal'
                     ),
                     '',
-                    AbstractMessage::ERROR
+                    \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
                 );
             }
         } else {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_cartpaypal.controller.order.payment.action.cancel.access_denied',
-                    'cart_paypal'
+                    'CartPaypal'
                 ),
                 '',
-                AbstractMessage::ERROR
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
         }
     }
 
-    public function notifyAction()
+    public function notifyAction(): \Psr\Http\Message\ResponseInterface
     {
-        if ($this->request->getMethod() !== 'POST') {
+		
+		if ($this->request->getMethod() !== 'POST') {
             // exit with Status Code in TYPO3 v10.4
             if (isset($this->response)) {
                 $this->response->setStatus(405);
@@ -194,11 +196,14 @@ class PaymentController extends ActionController
             return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
         }
 
-        $postData = GeneralUtility::_POST();
-
+        $postData = $this->request->getParsedBody();
         $curlRequest = $this->getCurlRequestFromPostData($postData);
 
-        if ($this->cartPaypalConf['debug']) {
+        if (
+			is_array($this->cartPaypalConf) &&
+			array_key_exists('debug', $this->cartPaypalConf) &&
+			$this->cartPaypalConf['debug']
+		) {
             $this->logger->debug(
                 'Log Data',
                 [
@@ -206,10 +211,9 @@ class PaymentController extends ActionController
                     '$curlRequest' => $curlRequest
                 ]
             );
-        }
+       }
 
         $this->execCurlRequest($curlRequest);
-
         $cartSHash = $postData['custom'];
         if (empty($cartSHash)) {
             // exit with Status Code in TYPO3 v10.4
@@ -234,7 +238,7 @@ class PaymentController extends ActionController
         $orderItem = $this->cart->getOrderItem();
         $payment = $orderItem->getPayment();
 
-        if ($payment->getStatus() !== 'paid') {
+        if ($payment->getStatus() !== 'paid' && $postData['payment_status'] == 'Completed') {
             $payment->setStatus('paid');
             $this->paymentRepository->update($payment);
             $this->persistenceManager->persistAll();
@@ -256,7 +260,14 @@ class PaymentController extends ActionController
         $cart = $this->cart->getCart();
         $cart->resetOrderNumber();
         $cart->resetInvoiceNumber();
-        $this->sessionHandler->write($cart, $this->cartConf['settings']['cart']['pid']);
+
+        // Neue Methode ab TYPO3 10+/Cart 8+:
+        #$this->sessionHandler->storeCart($cart->getCart(), $this->cartConf['settings']['cart']['pid']);
+		$this->sessionHandler->writeCart((string)$this->cartConf['settings']['cart']['pid'], $cart);
+		
+
+        // Oder alternativ für ältere Versionen:
+        // $this->sessionHandler->store($cart, $this->cartConf['settings']['cart']['pid']);
     }
 
     protected function getCurlRequestFromPostData(array $parsePostData): string
@@ -287,11 +298,15 @@ class PaymentController extends ActionController
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 
-        if (is_array($this->cartPaypalConf) && intval($this->cartPaypalConf['curl_timeout'])) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->cartPaypalConf['curl_timeout']));
-        } else {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
-        }
+        if (
+			is_array($this->cartPaypalConf)
+			&& array_key_exists('curl_timeout', $this->cartPaypalConf)
+			&& intval($this->cartPaypalConf['curl_timeout'])
+		) {
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->cartPaypalConf['curl_timeout']));
+		} else {
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
+		}
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
 
         $curlResult = strtolower(curl_exec($ch));
@@ -312,7 +327,11 @@ class PaymentController extends ActionController
             exit;
         }
 
-        if ($this->cartPaypalConf['debug']) {
+        if (
+			is_array($this->cartPaypalConf) &&
+			array_key_exists('debug', $this->cartPaypalConf) &&
+			$this->cartPaypalConf['debug']
+		) {
             $this->logger->debug(
                 'paypal-payment-api',
                 [
@@ -348,6 +367,13 @@ class PaymentController extends ActionController
         $this->cartRepository->setDefaultQuerySettings($querySettings);
 
         $findOneByMethod = 'findOneBy' . $type;
-        $this->cart = $this->cartRepository->$findOneByMethod($hash);
+        #$this->cart = $this->cartRepository->findOneBy(['method' => $hash]);
+		if($type == 'FHash') {
+			$this->cart = $this->cartRepository->findOneByFHash($hash);
+		}
+		else {
+			$this->cart = $this->cartRepository->findOneBySHash($hash);	
+		}
+		
     }
 }

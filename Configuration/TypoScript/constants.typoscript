@@ -1,3 +1,3 @@
 plugin.tx_cartpaypal {
-    redirectTypeNum = 2278101
+  redirectTypeNum = 2278101
 }

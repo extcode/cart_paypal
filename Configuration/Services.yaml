@@ -5,8 +5,8 @@ services:
     public: false
 
   Extcode\CartPaypal\:
-    resource: '../Classes/*'
-    exclude: '../Classes/Widgets/*'
+    resource: "../Classes/*"
+    exclude: "../Classes/Widgets/*"
 
   Extcode\CartPaypal\Controller\Order\PaymentController:
     arguments:
@@ -19,13 +19,13 @@ services:
   Extcode\CartPaypal\EventListener\Order\Payment\ClearCart:
     arguments:
       $cartUtility: '@Extcode\Cart\Utility\CartUtility'
-      $parserUtility: '@Extcode\Cart\Utility\ParserUtility'
+      $paymentMethodsService: '@Extcode\Cart\Service\PaymentMethodsServiceInterface'
       $sessionHandler: '@Extcode\Cart\Service\SessionHandler'
     tags:
       - name: event.listener
-        identifier: 'cart-paypal--order--payment--clear-cart'
+        identifier: "cart-paypal--order--payment--clear-cart"
         event: Extcode\Cart\Event\Order\PaymentEvent
-        before: 'cart-paypal--order--payment--provider-redirect'
+        before: "cart-paypal--order--payment--provider-redirect"
 
   Extcode\CartPaypal\EventListener\Order\Payment\ProviderRedirect:
     arguments:
@@ -35,12 +35,12 @@ services:
       $cartRepository: '@Extcode\Cart\Domain\Repository\CartRepository'
     tags:
       - name: event.listener
-        identifier: 'cart-paypal--order--payment--provider-redirect'
+        identifier: "cart-paypal--order--payment--provider-redirect"
         event: Extcode\Cart\Event\Order\PaymentEvent
 
   Extcode\CartPaypal\EventListener\Order\Notify\Email:
     class: 'Extcode\Cart\EventListener\Order\Finish\Email'
     tags:
       - name: event.listener
-        identifier: 'cart-paypal--order--notify--email'
+        identifier: "cart-paypal--order--notify--email"
         event: Extcode\CartPaypal\Event\Order\NotifyEvent
