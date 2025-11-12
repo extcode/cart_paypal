@@ -17,6 +17,7 @@ use Extcode\CartPaypal\Event\Order\CancelEvent;
 use Extcode\CartPaypal\Event\Order\NotifyEvent;
 use Extcode\CartPaypal\Event\Order\SuccessEvent;
 use Psr\Log\LoggerInterface;
+use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Core\Log\LogManagerInterface;
 use TYPO3\CMS\Core\Messaging\AbstractMessage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -25,12 +26,10 @@ use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 use TYPO3\CMS\Extbase\Persistence\Generic\Typo3QuerySettings;
 use TYPO3\CMS\Extbase\Utility\LocalizationUtility;
+use TYPO3\CMS\Core\Http\RequestFactory;
 
 class PaymentController extends ActionController
 {
-    const PAYPAL_API_SANDBOX = 'https://www.sandbox.paypal.com/cgi-bin/webscr?';
-    const PAYPAL_API_LIVE = 'https://www.paypal.com/cgi-bin/webscr?';
-
     /**
      * @var LoggerInterface
      */
@@ -57,6 +56,11 @@ class PaymentController extends ActionController
     protected $paymentRepository;
 
     /**
+     * @var RequestFactory
+     */
+    protected $requestFactory;
+
+    /**
      * @var Cart
      */
     protected $cart;
@@ -71,18 +75,25 @@ class PaymentController extends ActionController
      */
     protected $cartPaypalConf = [];
 
+    /**
+     * @var string|null
+     */
+    protected $accessToken = null;
+
     public function __construct(
         LogManagerInterface $logManager,
         PersistenceManager $persistenceManager,
         SessionHandler $sessionHandler,
         CartRepository $cartRepository,
-        PaymentRepository $paymentRepository
+        PaymentRepository $paymentRepository,
+        RequestFactory $requestFactory
     ) {
         $this->logger = $logManager->getLogger();
         $this->persistenceManager = $persistenceManager;
         $this->sessionHandler = $sessionHandler;
         $this->cartRepository = $cartRepository;
         $this->paymentRepository = $paymentRepository;
+        $this->requestFactory = $requestFactory;
     }
 
     protected function initializeAction(): void
@@ -100,135 +111,329 @@ class PaymentController extends ActionController
             );
     }
 
-    public function successAction(): void
+    public function successAction(): ResponseInterface
     {
-        if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
-            $this->loadCartByHash($this->request->getArgument('hash'));
+        $token = $this->request->getQueryParams()['token'] ?? '';
 
-            if ($this->cart) {
-                $orderItem = $this->cart->getOrderItem();
-
-                $successEvent = new SuccessEvent($this->cart->getCart(), $orderItem, $this->cartConf);
-                $this->eventDispatcher->dispatch($successEvent);
-
-                $this->redirect('show', 'Cart\Order', 'Cart', ['orderItem' => $orderItem]);
-            } else {
-                $this->addFlashMessage(
-                    LocalizationUtility::translate(
-                        'tx_cartpaypal.controller.order.payment.action.success.error_occured',
-                        'cart_paypal'
-                    ),
-                    '',
-                    AbstractMessage::ERROR
-                );
-            }
-        } else {
+        if (!$token) {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
                     'tx_cartpaypal.controller.order.payment.action.success.access_denied',
-                    'cart_paypal'
+                    'CartPaypal'
                 ),
                 '',
-                AbstractMessage::ERROR
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
+            return $this->redirect('show', 'Cart\Cart', 'Cart');
         }
-    }
 
-    public function cancelAction(): void
-    {
-        if ($this->request->hasArgument('hash') && !empty($this->request->getArgument('hash'))) {
-            $this->loadCartByHash($this->request->getArgument('hash'), 'FHash');
+        $this->loadCartByPaypalOrderId($token);
 
-            if ($this->cart) {
-                $orderItem = $this->cart->getOrderItem();
-                $payment = $orderItem->getPayment();
+        if (!$this->cart) {
+            $this->addFlashMessage(
+                LocalizationUtility::translate(
+                    'tx_cartpaypal.controller.order.payment.action.success.error_occured',
+                    'CartPaypal'
+                ),
+                '',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('show', 'Cart\Cart', 'Cart');
+        }
 
-                $this->restoreCartSession();
+        // Capture the PayPal order
+        if ($this->capturePayPalOrder($token)) {
+            $orderItem = $this->cart->getOrderItem();
 
-                $payment->setStatus('canceled');
+            $successEvent = new SuccessEvent($this->cart->getCart(), $orderItem, $this->cartConf);
+            $this->eventDispatcher->dispatch($successEvent);
 
-                $this->paymentRepository->update($payment);
-                $this->persistenceManager->persistAll();
-
-                $this->addFlashMessage(
-                    LocalizationUtility::translate(
-                        'tx_cartpaypal.controller.order.payment.action.cancel.successfully_canceled',
-                        'cart_paypal'
-                    )
-                );
-
-                $cancelEvent = new CancelEvent($this->cart->getCart(), $orderItem, $this->cartConf);
-                $this->eventDispatcher->dispatch($cancelEvent);
-
-                $this->redirect('show', 'Cart\Cart', 'Cart');
-            } else {
-                $this->addFlashMessage(
-                    LocalizationUtility::translate(
-                        'tx_cartpaypal.controller.order.payment.action.cancel.error_occured',
-                        'cart_paypal'
-                    ),
-                    '',
-                    AbstractMessage::ERROR
-                );
-            }
+            return $this->redirect('show', 'Cart\Order', 'Cart', ['orderItem' => $orderItem]);
         } else {
             $this->addFlashMessage(
                 LocalizationUtility::translate(
-                    'tx_cartpaypal.controller.order.payment.action.cancel.access_denied',
-                    'cart_paypal'
+                    'tx_cartpaypal.controller.order.payment.action.success.payment_failed',
+                    'CartPaypal'
                 ),
                 '',
-                AbstractMessage::ERROR
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
+            return $this->redirect('show', 'Cart\Cart', 'Cart');
         }
     }
 
-    public function notifyAction()
+    public function cancelAction(): ResponseInterface
     {
-        if ($this->request->getMethod() !== 'POST') {
-            // exit with Status Code in TYPO3 v10.4
-            if (isset($this->response)) {
-                $this->response->setStatus(405);
-                exit();
-            }
-            return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
+        $token = $this->request->getQueryParams()['token'] ?? '';
+
+        if (!$token) {
+            $this->addFlashMessage(
+                LocalizationUtility::translate(
+                    'tx_cartpaypal.controller.order.payment.action.cancel.access_denied',
+                    'CartPaypal'
+                ),
+                '',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
+            );
+            return $this->redirect('show', 'Cart\Cart', 'Cart');
         }
 
-        $postData = GeneralUtility::_POST();
+        $this->loadCartByPaypalOrderId($token);
 
-        $curlRequest = $this->getCurlRequestFromPostData($postData);
+        if ($this->cart) {
+            $orderItem = $this->cart->getOrderItem();
+            $payment = $orderItem->getPayment();
 
-        if ($this->cartPaypalConf['debug']) {
-            $this->logger->debug(
-                'Log Data',
-                [
-                    '$parsedPostData' => $postData,
-                    '$curlRequest' => $curlRequest
-                ]
+            $this->restoreCartSession();
+
+            $payment->setStatus('canceled');
+            $this->paymentRepository->update($payment);
+            $this->persistenceManager->persistAll();
+
+            $this->addFlashMessage(
+                LocalizationUtility::translate(
+                    'tx_cartpaypal.controller.order.payment.action.cancel.successfully_canceled',
+                    'CartPaypal'
+                )
+            );
+
+            $cancelEvent = new CancelEvent($this->cart->getCart(), $orderItem, $this->cartConf);
+            $this->eventDispatcher->dispatch($cancelEvent);
+        } else {
+            $this->addFlashMessage(
+                LocalizationUtility::translate(
+                    'tx_cartpaypal.controller.order.payment.action.cancel.error_occured',
+                    'CartPaypal'
+                ),
+                '',
+                \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::ERROR
             );
         }
 
-        $this->execCurlRequest($curlRequest);
+        return $this->redirect('show', 'Cart\Cart', 'Cart');
+    }
 
-        $cartSHash = $postData['custom'];
-        if (empty($cartSHash)) {
-            // exit with Status Code in TYPO3 v10.4
-            if (isset($this->response)) {
-                $this->response->setStatus(403);
-                exit();
-            }
-            return $this->htmlResponse()->withStatus(403, 'Not allowed.');
+    public function notifyAction(): ResponseInterface
+    {
+        if ($this->request->getMethod() !== 'POST') {
+            return $this->htmlResponse()->withStatus(405, 'Method not allowed.');
         }
 
-        $this->loadCartByHash($this->request->getArgument('hash'));
+        $webhookBody = $this->request->getBody()->getContents();
+        $webhookData = json_decode($webhookBody, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->logger->error('Invalid JSON in PayPal webhook: ' . $webhookBody);
+            return $this->htmlResponse()->withStatus(400, 'Invalid JSON');
+        }
+
+        // Verify webhook signature
+        if (!$this->verifyWebhookSignature($webhookData)) {
+            $this->logger->warning('PayPal webhook signature verification failed');
+            return $this->htmlResponse()->withStatus(401, 'Signature verification failed');
+        }
+
+        $eventType = $webhookData['event_type'] ?? '';
+        $resource = $webhookData['resource'] ?? [];
+
+        $this->logger->debug('PayPal Webhook received', [
+            'event_type' => $eventType,
+            'resource' => $resource
+        ]);
+
+        switch ($eventType) {
+            case 'CHECKOUT.ORDER.APPROVED':
+            case 'PAYMENT.CAPTURE.COMPLETED':
+                $this->handlePaymentCompleted($resource);
+                break;
+
+            case 'PAYMENT.CAPTURE.DENIED':
+            case 'PAYMENT.CAPTURE.FAILED':
+                $this->handlePaymentFailed($resource);
+                break;
+
+            case 'PAYMENT.CAPTURE.REFUNDED':
+                $this->handlePaymentRefunded($resource);
+                break;
+
+            default:
+                $this->logger->info('Unhandled PayPal webhook event: ' . $eventType);
+        }
+
+        return $this->htmlResponse()->withStatus(200);
+    }
+
+    protected function capturePayPalOrder(string $orderId): bool
+    {
+        try {
+            $accessToken = $this->getAccessToken();
+            if (!$accessToken) {
+                throw new \Exception('Could not get access token');
+            }
+
+            $captureUrl = $this->getApiBaseUrl() . '/v2/checkout/orders/' . $orderId . '/capture';
+
+            $response = $this->requestFactory->request($captureUrl, 'POST', [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Prefer' => 'return=representation'
+                ]
+            ]);
+
+            $responseData = json_decode($response->getBody()->getContents(), true);
+
+            if ($response->getStatusCode() === 201 || $response->getStatusCode() === 200) {
+                if ($responseData['status'] === 'COMPLETED') {
+                    $orderItem = $this->cart->getOrderItem();
+                    $payment = $orderItem->getPayment();
+
+                    $payment->setStatus('paid');
+
+                    // Die PayPal Order ID wird bereits in der Cart-Entität gespeichert
+                    // Wir müssen sie nicht zusätzlich in der Payment-Entität speichern
+                    // Die Zuordnung erfolgt über die Cart-Entität
+
+                    $this->paymentRepository->update($payment);
+                    $this->persistenceManager->persistAll();
+
+                    $this->logger->info('PayPal order captured successfully', ['order_id' => $orderId]);
+                    return true;
+                }
+            }
+
+            $this->logger->error('PayPal capture failed', [
+                'order_id' => $orderId,
+                'status_code' => $response->getStatusCode(),
+                'response' => $responseData
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logger->error('PayPal capture error: ' . $e->getMessage(), [
+                'order_id' => $orderId,
+                'exception' => $e
+            ]);
+        }
+
+        return false;
+    }
+
+    protected function getAccessToken(): ?string
+    {
+        if ($this->accessToken !== null) {
+            return $this->accessToken;
+        }
+
+        try {
+            $authUrl = $this->getApiBaseUrl() . '/v1/oauth2/token';
+            $clientId = $this->cartPaypalConf['clientId'] ?? '';
+            $clientSecret = $this->cartPaypalConf['clientSecret'] ?? '';
+
+            if (empty($clientId) || empty($clientSecret)) {
+                throw new \Exception('PayPal client ID or secret not configured');
+            }
+
+            $response = $this->requestFactory->request($authUrl, 'POST', [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Basic ' . base64_encode($clientId . ':' . $clientSecret),
+                    'Content-Type' => 'application/x-www-form-urlencoded'
+                ],
+                'body' => 'grant_type=client_credentials'
+            ]);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            if (isset($data['access_token'])) {
+                $this->accessToken = $data['access_token'];
+                return $this->accessToken;
+            }
+
+        } catch (\Exception $e) {
+            $this->logger->error('PayPal access token error: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    protected function verifyWebhookSignature(array $webhookData): bool
+    {
+        $transmissionId = $this->request->getHeader('Paypal-Transmission-Id')[0] ?? '';
+        $transmissionTime = $this->request->getHeader('Paypal-Transmission-Time')[0] ?? '';
+        $transmissionSig = $this->request->getHeader('Paypal-Transmission-Sig')[0] ?? '';
+        $certUrl = $this->request->getHeader('Paypal-Cert-Url')[0] ?? '';
+        $authAlgo = $this->request->getHeader('Paypal-Auth-Algo')[0] ?? '';
+        $webhookId = $this->cartPaypalConf['webhookId'] ?? '';
+
+        if (empty($transmissionId) || empty($transmissionTime) || empty($transmissionSig) ||
+            empty($certUrl) || empty($authAlgo) || empty($webhookId)) {
+            return false;
+        }
+
+        // In production, implement proper signature verification
+        // For now, we'll do a basic verification
+        $expectedWebhookId = $this->cartPaypalConf['webhookId'] ?? '';
+
+        if (!empty($expectedWebhookId) && isset($webhookData['id'])) {
+            // Simple verification - in production use proper cryptographic verification
+            return $this->verifyWebhookWithPayPal($webhookData, $transmissionId, $transmissionTime, $transmissionSig, $certUrl, $authAlgo, $webhookId);
+        }
+
+        return true; // For development without webhook ID configured
+    }
+
+    protected function verifyWebhookWithPayPal(array $webhookData, string $transmissionId, string $transmissionTime, string $transmissionSig, string $certUrl, string $authAlgo, string $webhookId): bool
+    {
+        try {
+            $accessToken = $this->getAccessToken();
+            if (!$accessToken) {
+                return false;
+            }
+
+            $verifyUrl = $this->getApiBaseUrl() . '/v1/notifications/verify-webhook-signature';
+
+            $verificationData = [
+                'transmission_id' => $transmissionId,
+                'transmission_time' => $transmissionTime,
+                'transmission_sig' => $transmissionSig,
+                'cert_url' => $certUrl,
+                'auth_algo' => $authAlgo,
+                'webhook_id' => $webhookId,
+                'webhook_event' => $webhookData
+            ];
+
+            $response = $this->requestFactory->request($verifyUrl, 'POST', [
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer ' . $accessToken
+                ],
+                'body' => json_encode($verificationData)
+            ]);
+
+            $result = json_decode($response->getBody()->getContents(), true);
+
+            return isset($result['verification_status']) && $result['verification_status'] === 'SUCCESS';
+
+        } catch (\Exception $e) {
+            $this->logger->error('PayPal webhook verification error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    protected function handlePaymentCompleted(array $resource): void
+    {
+        $orderId = $resource['id'] ?? $resource['order_id'] ?? '';
+
+        if (!$orderId) {
+            $this->logger->error('No order ID in completed payment webhook');
+            return;
+        }
+
+        $this->loadCartByPaypalOrderId($orderId);
 
         if ($this->cart === null) {
-            // exit with Status Code in TYPO3 v10.4
-            if (isset($this->response)) {
-                $this->response->setStatus(404);
-                exit();
-            }
-            return $this->htmlResponse()->withStatus(404, 'Page / Cart not found.');
+            $this->logger->error('Cart not found for PayPal order: ' . $orderId);
+            return;
         }
 
         $orderItem = $this->cart->getOrderItem();
@@ -236,19 +441,73 @@ class PaymentController extends ActionController
 
         if ($payment->getStatus() !== 'paid') {
             $payment->setStatus('paid');
+
+            // Die PayPal Order ID ist bereits in der Cart-Entität gespeichert
+            // Die Zuordnung erfolgt über die Cart-Entität
+
             $this->paymentRepository->update($payment);
             $this->persistenceManager->persistAll();
 
             $notifyEvent = new NotifyEvent($this->cart->getCart(), $orderItem, $this->cartConf);
             $this->eventDispatcher->dispatch($notifyEvent);
+
+            $this->logger->info('Payment completed via webhook', ['order_id' => $orderId]);
+        }
+    }
+
+    protected function handlePaymentFailed(array $resource): void
+    {
+        $orderId = $resource['id'] ?? $resource['order_id'] ?? '';
+
+        if (!$orderId) {
+            return;
         }
 
-        // exit with Status Code in TYPO3 v10.4
-        if (isset($this->response)) {
-            $this->response->setStatus(200);
-            exit();
+        $this->loadCartByPaypalOrderId($orderId);
+
+        if ($this->cart === null) {
+            return;
         }
-        return $this->htmlResponse()->withStatus(200);
+
+        $orderItem = $this->cart->getOrderItem();
+        $payment = $orderItem->getPayment();
+
+        $payment->setStatus('failed');
+        $this->paymentRepository->update($payment);
+        $this->persistenceManager->persistAll();
+
+        $this->logger->info('Payment failed via webhook', ['order_id' => $orderId]);
+    }
+
+    protected function handlePaymentRefunded(array $resource): void
+    {
+        $orderId = $resource['id'] ?? $resource['order_id'] ?? '';
+
+        if (!$orderId) {
+            return;
+        }
+
+        $this->loadCartByPaypalOrderId($orderId);
+
+        if ($this->cart === null) {
+            return;
+        }
+
+        $orderItem = $this->cart->getOrderItem();
+        $payment = $orderItem->getPayment();
+
+        $payment->setStatus('refunded');
+        $this->paymentRepository->update($payment);
+        $this->persistenceManager->persistAll();
+
+        $this->logger->info('Payment refunded via webhook', ['order_id' => $orderId]);
+    }
+
+    protected function getApiBaseUrl(): string
+    {
+        return $this->cartPaypalConf['sandbox'] ?
+            'https://api.sandbox.paypal.com' :
+            'https://api.paypal.com';
     }
 
     protected function restoreCartSession(): void
@@ -256,90 +515,11 @@ class PaymentController extends ActionController
         $cart = $this->cart->getCart();
         $cart->resetOrderNumber();
         $cart->resetInvoiceNumber();
-        $this->sessionHandler->write($cart, $this->cartConf['settings']['cart']['pid']);
+
+        $this->sessionHandler->writeCart((string)$this->cartConf['settings']['cart']['pid'], $cart);
     }
 
-    protected function getCurlRequestFromPostData(array $parsePostData): string
-    {
-        $curlRequest = 'cmd=_notify-validate';
-        foreach ($parsePostData as $key => $value) {
-            $value = urlencode($value);
-            $curlRequest .= "&$key=$value";
-        }
-
-        return $curlRequest;
-    }
-
-    protected function execCurlRequest(string $curlRequest): bool
-    {
-        $paypalUrl = $this->getPaypalUrl();
-
-        $ch = curl_init($paypalUrl);
-        if ($ch === false) {
-            return false;
-        }
-
-        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $curlRequest);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
-
-        if (is_array($this->cartPaypalConf) && intval($this->cartPaypalConf['curl_timeout'])) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, intval($this->cartPaypalConf['curl_timeout']));
-        } else {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
-        }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
-
-        $curlResult = strtolower(curl_exec($ch));
-        $curlError = curl_errno($ch);
-
-        if ($curlError !== 0) {
-            $this->logger->warning(
-                'paypal-payment-api',
-                [
-                    'ERROR' => 'Can\'t connect to PayPal to validate IPN message',
-                    'curl_error' => curl_error($ch),
-                    'curl_request' => $curlRequest,
-                    'curl_result' => $curlResult,
-                ]
-            );
-
-            curl_close($ch);
-            exit;
-        }
-
-        if ($this->cartPaypalConf['debug']) {
-            $this->logger->debug(
-                'paypal-payment-api',
-                [
-                    'curl_info' => curl_getinfo($ch, CURLINFO_HEADER_OUT),
-                    'curl_request' => $curlRequest,
-                    'curl_result' => $curlResult,
-                ]
-            );
-        }
-
-        $curlResults = explode("\r\n\r\n", $curlResult);
-
-        curl_close($ch);
-
-        return true;
-    }
-
-    protected function getPaypalUrl(): string
-    {
-        if ($this->cartPaypalConf['sandbox']) {
-            return self::PAYPAL_API_SANDBOX;
-        }
-
-        return self::PAYPAL_API_LIVE;
-    }
-
-    protected function loadCartByHash(string $hash, string $type = 'SHash'): void
+    protected function loadCartByPaypalOrderId(string $paypalOrderId): void
     {
         $querySettings = GeneralUtility::makeInstance(
             Typo3QuerySettings::class
@@ -347,7 +527,6 @@ class PaymentController extends ActionController
         $querySettings->setStoragePageIds([$this->cartConf['settings']['order']['pid']]);
         $this->cartRepository->setDefaultQuerySettings($querySettings);
 
-        $findOneByMethod = 'findOneBy' . $type;
-        $this->cart = $this->cartRepository->$findOneByMethod($hash);
+        $this->cart = $this->cartRepository->findOneByPaypalOrderId($paypalOrderId);
     }
 }
