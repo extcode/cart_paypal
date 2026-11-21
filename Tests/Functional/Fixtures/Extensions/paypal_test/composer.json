@@ -1,0 +1,21 @@
+{
+    "name": "extcode/paypal-test",
+    "type": "typo3-cms-extension",
+    "description": "Mocks the PayPal API and records the events of cart_paypal in functional tests",
+    "license": [
+        "GPL-2.0-or-later"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Extcode\\PaypalTest\\": "Classes/"
+        }
+    },
+    "require": {
+        "extcode/cart-paypal": "*"
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "paypal_test"
+        }
+    }
+}

@@ -1,0 +1,17 @@
+base: 'http://localhost/'
+cartPaypal:
+  credentials:
+    clientId: client-id-of-the-site
+    clientSecret: '%env(CART_PAYPAL_TEST_CLIENT_SECRET)%'
+languages:
+  -
+    title: English
+    enabled: true
+    base: /
+    typo3Language: default
+    locale: en_US.UTF-8
+    navigationTitle: English
+    flag: us
+    languageId: 0
+rootPageId: 1
+websiteTitle: tests

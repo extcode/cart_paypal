@@ -1,26 +1,92 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2017-11-17T00:55:00Z" product-name="cart_paypal">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="messages" date="2026-11-20T12:00:00Z" product-name="cart_paypal">
         <header/>
         <body>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.success.successfully_paid">
-                <source>The order was successfully paid.</source>
+
+            <trans-unit id="tx_cartpaypal.payment.title">
+                <source>Pay for your order</source>
             </trans-unit>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.success.error_occured">
-                <source>An error occurred while updating the order.</source>
+            <trans-unit id="tx_cartpaypal.payment.intro">
+                <source>Your order %1$s has been placed. Please complete it with the payment via PayPal.</source>
             </trans-unit>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.success.access_denied">
+            <trans-unit id="tx_cartpaypal.payment.amount_due">
+                <source>Amount due</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.hint.paypal">
+                <source>You log in and approve the payment in a window of PayPal. Your order is completed as soon as the payment is received.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.hint.card">
+                <source>You enter your debit or credit card in a window of PayPal, a PayPal account is not required. Your order is completed as soon as the payment is received.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.order">
+                <source>Your order</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.product">
+                <source>Product</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.quantity">
+                <source>Quantity</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.price">
+                <source>Price</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.subtotal">
+                <source>Subtotal</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.shipping">
+                <source>Shipping (%1$s)</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.payment_fee">
+                <source>Payment fee (%1$s)</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.total">
+                <source>Total</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.billing_address">
+                <source>Billing address</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.shipping_address">
+                <source>Shipping address</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.shipping_same_as_billing">
+                <source>Same as billing address</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.redirect">
+                <source>Continue to PayPal</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.cancel">
+                <source>Cancel the payment and return to the cart</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.back_to_cart">
+                <source>Return to the cart</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.window_closed">
+                <source>The payment was not completed. Please try again.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.state.canceled">
+                <source>The payment of this order was canceled.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.state.unknown">
+                <source>The order could not be found.</source>
+            </trans-unit>
+
+            <trans-unit id="tx_cartpaypal.payment.canceled">
+                <source>The payment process was aborted.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.declined">
+                <source>PayPal declined the payment. Please choose another payment method at PayPal or in the cart.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.error">
+                <source>An error occurred during the payment with PayPal. Please try again later.</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.payment.not_possible">
+                <source>The order can not be paid (anymore).</source>
+            </trans-unit>
+            <trans-unit id="tx_cartpaypal.access_denied">
                 <source>Access denied!</source>
             </trans-unit>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.cancel.successfully_canceled">
-                <source>The order has been canceled.</source>
-            </trans-unit>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.cancel.error_occured">
-                <source>An error occurred while updating the order.</source>
-            </trans-unit>
-            <trans-unit id="tx_cartpaypal.controller.order.payment.action.cancel.access_denied">
-                <source>Access denied!</source>
-            </trans-unit>
+
         </body>
     </file>
 </xliff>

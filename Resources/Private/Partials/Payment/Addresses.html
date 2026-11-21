@@ -1,0 +1,33 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<div class="row g-4">
+    <div class="col-sm-6">
+        <h3 class="h6"><f:translate key="tx_cartpaypal.payment.billing_address" extensionName="CartPaypal"/></h3>
+        <f:render section="address" arguments="{address: orderItem.billingAddress}"/>
+    </div>
+    <div class="col-sm-6">
+        <h3 class="h6"><f:translate key="tx_cartpaypal.payment.shipping_address" extensionName="CartPaypal"/></h3>
+        <f:if condition="{orderItem.shippingAddress}">
+            <f:then>
+                <f:render section="address" arguments="{address: orderItem.shippingAddress}"/>
+            </f:then>
+            <f:else>
+                <p><f:translate key="tx_cartpaypal.payment.shipping_same_as_billing" extensionName="CartPaypal"/></p>
+            </f:else>
+        </f:if>
+    </div>
+</div>
+
+<f:section name="address">
+    <address>
+        <f:if condition="{address.company}">{address.company}<br/></f:if>
+        {address.firstName} {address.lastName}<br/>
+        {address.street} {address.streetNumber}<br/>
+        {address.zip} {address.city}<br/>
+        <f:if condition="{address.country}">
+            <f:translate key="tx_cart.settings.allowed_countries.{address.country}" extensionName="Cart" default="{address.country}"/>
+        </f:if>
+    </address>
+</f:section>
+</html>

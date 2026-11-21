@@ -1,0 +1,109 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:cart="http://typo3.org/ns/Extcode/Cart/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="Default"/>
+
+<f:section name="main">
+    <f:flashMessages/>
+
+    <f:switch expression="{state}">
+        <f:case value="open">
+            <f:render section="open" arguments="{_all}"/>
+        </f:case>
+        <f:case value="canceled">
+            <div class="alert alert-warning">
+                <f:translate key="tx_cartpaypal.payment.state.canceled" extensionName="CartPaypal"/>
+            </div>
+            <p>
+                <a href="{cartUrl}" class="btn btn-outline-secondary">
+                    <f:translate key="tx_cartpaypal.payment.back_to_cart" extensionName="CartPaypal"/>
+                </a>
+            </p>
+        </f:case>
+        <f:defaultCase>
+            <div class="alert alert-danger">
+                <f:translate key="tx_cartpaypal.payment.state.unknown" extensionName="CartPaypal"/>
+            </div>
+        </f:defaultCase>
+    </f:switch>
+</f:section>
+
+<f:section name="open">
+    <div class="cart-paypal-payment"
+         data-cart-paypal-payment
+         data-payment-method="{paymentMethod}"
+         data-sdk-url="{paypal.sdkUrl}"
+         data-client-id="{paypal.clientId}"
+         data-locale="{paypal.locale}"
+         data-currency-code="{currencyCode}"
+         data-amount="{amount}"
+         data-create-order-url="{urls.createOrder}"
+         data-capture-order-url="{urls.captureOrder}"
+         data-message-error="{f:translate(key: 'tx_cartpaypal.payment.error', extensionName: 'CartPaypal')}"
+         data-message-canceled="{f:translate(key: 'tx_cartpaypal.payment.window_closed', extensionName: 'CartPaypal')}"
+    >
+        <h2><f:translate key="tx_cartpaypal.payment.title" extensionName="CartPaypal"/></h2>
+        <p class="lead">
+            <f:translate key="tx_cartpaypal.payment.intro" extensionName="CartPaypal" arguments="{0: orderItem.orderNumber}"/>
+        </p>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <f:render partial="Payment/OrderSummary" arguments="{orderItem: orderItem, settings: settings}"/>
+                <f:render partial="Payment/Addresses" arguments="{orderItem: orderItem}"/>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card cart-paypal-payment__box">
+                    <div class="card-body">
+                        <h3 class="h5 card-title">
+                            <f:translate key="tx_cartpaypal.payment.amount_due" extensionName="CartPaypal"/>
+                        </h3>
+                        <p class="fs-3 fw-bold mb-3">
+                            <cart:format.currency currencySign="{orderItem.currencySign}">{orderItem.totalGross}</cart:format.currency>
+                        </p>
+
+                        <div class="cart-paypal-payment__message alert alert-danger" role="alert" data-cart-paypal-message hidden></div>
+
+                        <f:if condition="{paymentMethod} == 'card'">
+                            <f:then>
+                                <paypal-basic-card-container>
+                                    <paypal-basic-card-button hidden></paypal-basic-card-button>
+                                </paypal-basic-card-container>
+                            </f:then>
+                            <f:else>
+                                <paypal-button hidden></paypal-button>
+                            </f:else>
+                        </f:if>
+
+                        <p class="cart-paypal-payment__fallback" data-cart-paypal-fallback hidden>
+                            <a href="{urls.redirect}" class="btn btn-primary w-100">
+                                <f:translate key="tx_cartpaypal.payment.redirect" extensionName="CartPaypal"/>
+                            </a>
+                        </p>
+                        <noscript>
+                            <p>
+                                <a href="{urls.redirect}" class="btn btn-primary w-100">
+                                    <f:translate key="tx_cartpaypal.payment.redirect" extensionName="CartPaypal"/>
+                                </a>
+                            </p>
+                        </noscript>
+
+                        <p class="small text-muted mt-3 mb-0">
+                            <f:translate key="tx_cartpaypal.payment.hint.{paymentMethod}" extensionName="CartPaypal"/>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{urls.cancel}" class="link-secondary small">
+                            <f:translate key="tx_cartpaypal.payment.cancel" extensionName="CartPaypal"/>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <f:asset.script identifier="cart-paypal-payment" src="EXT:cart_paypal/Resources/Public/JavaScript/Payment.js" defer="true"/>
+</f:section>
+</html>

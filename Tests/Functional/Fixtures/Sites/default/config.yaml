@@ -1,0 +1,13 @@
+base: 'http://localhost/'
+languages:
+  -
+    title: English
+    enabled: true
+    base: /
+    typo3Language: default
+    locale: en_US.UTF-8
+    navigationTitle: English
+    flag: us
+    languageId: 0
+rootPageId: 1
+websiteTitle: tests

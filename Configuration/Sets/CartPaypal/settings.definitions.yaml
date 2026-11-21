@@ -1,0 +1,38 @@
+categories:
+  cartPaypal:
+    label: 'Cart PayPal'
+
+settings:
+  plugin.tx_cartpaypal.paymentPid:
+    label: 'Payment page'
+    description: 'Page with the content element "Cart: PayPal payment". Without a page the customer is redirected to PayPal directly after the order.'
+    category: cartPaypal
+    type: page
+    default: 0
+  plugin.tx_cartpaypal.redirectTypeNum:
+    label: 'Page type of the endpoints'
+    description: 'Page type of the webhook, of the return from PayPal and of the requests of the payment page.'
+    category: cartPaypal
+    type: int
+    default: 2278101
+  plugin.tx_cartpaypal.brandName:
+    label: 'Shop name at PayPal'
+    description: 'Name of the shop shown by PayPal, at most 127 characters. Empty shows the name of the PayPal account.'
+    category: cartPaypal
+    type: string
+    default: ''
+  plugin.tx_cartpaypal.locale:
+    label: 'Language at PayPal'
+    description: 'Language of the PayPal pages as BCP-47 code, e.g. de-DE. Empty lets PayPal decide.'
+    category: cartPaypal
+    type: string
+    default: ''
+  plugin.tx_cartpaypal.shippingPreference:
+    label: 'Shipping address at PayPal'
+    description: 'NO_SHIPPING: PayPal asks for no shipping address, the order has the addresses of the cart. GET_FROM_FILE: the customer chooses a shipping address stored at PayPal, it is not transferred to the order.'
+    category: cartPaypal
+    type: string
+    enum:
+      NO_SHIPPING: 'No shipping address'
+      GET_FROM_FILE: 'Shipping address stored at PayPal'
+    default: NO_SHIPPING

@@ -1,37 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2016-04-26T20:15:00Z" product-name="cart_paypal">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="messages" date="2026-11-20T12:00:00Z" product-name="cart_paypal">
         <header/>
         <body>
-
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.completed">
-                <source>completed</source>
+            <trans-unit id="tx_cartpaypal.plugin.payment">
+                <source>Cart: PayPal payment</source>
             </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.created">
-                <source>created</source>
+            <trans-unit id="tx_cartpaypal.plugin.payment.description">
+                <source>Shows the PayPal button for an order. Place it on the page configured as plugin.tx_cartpaypal.paymentPid.</source>
             </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.denied">
-                <source>denied</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.expired">
-                <source>expired</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.failed">
-                <source>failed</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.refunded">
-                <source>refunded</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.reversed">
-                <source>reversed</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.processed">
-                <source>processed</source>
-            </trans-unit>
-            <trans-unit id="tx_cart_domain_model_order_transaction.status.voided">
-                <source>voided</source>
-            </trans-unit>
-
         </body>
     </file>
 </xliff>

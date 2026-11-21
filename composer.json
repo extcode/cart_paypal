@@ -4,18 +4,19 @@
     "description": "Shopping Cart(s) for TYPO3 - PayPal Payment Provider",
     "homepage": "https://cart.extco.de",
     "license": [
-        "GPL-2.0+"
+        "GPL-2.0-or-later"
     ],
     "keywords": [
         "TYPO3 CMS",
         "Shopping Cart",
+        "Payment Provider",
         "PayPal",
-        "cart"
+        "Cart"
     ],
     "authors": [
         {
             "name": "Daniel Gohlke",
-            "email": "ext.cart@extco.de",
+            "email": "ext@extco.de",
             "role": "Developer"
         }
     ],
@@ -27,66 +28,63 @@
             "Extcode\\CartPaypal\\": "Classes"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Extcode\\CartPaypal\\Tests\\": "Tests/",
+            "Extcode\\PaypalTest\\": "Tests/Functional/Fixtures/Extensions/paypal_test/Classes/"
+        }
+    },
     "config": {
-        "bin-dir": ".build/bin",
-        "vendor-dir": ".build/vendor"
+        "bin-dir": ".Build/bin",
+        "vendor-dir": ".Build/vendor",
+        "allow-plugins": {
+            "typo3/cms-composer-installers": true,
+            "typo3/class-alias-loader": true
+        },
+        "lock": false
     },
     "extra": {
         "typo3/cms": {
             "extension-key": "cart_paypal",
-            "app-dir": ".build",
-            "web-dir": ".build/public"
+            "web-dir": ".Build/public"
         }
     },
     "require": {
-        "php": "^7.2 || ^8.0",
-        "ext-curl": "*",
-        "typo3/cms-core": "^10.4 || ^11.5",
-        "typo3/cms-extbase": "^10.4 || ^11.5",
-        "typo3/cms-frontend": "^10.4 || ^11.5",
-        "extcode/cart": "^8.0"
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "extcode/cart": "^11.10",
+        "typo3/cms-core": "^13.4",
+        "typo3/cms-extbase": "^13.4",
+        "typo3/cms-fluid": "^13.4",
+        "typo3/cms-frontend": "^13.4"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.14",
-        "helmich/typo3-typoscript-lint": "^2.0",
-        "overtrue/phplint": "^1.1",
-        "rector/rector": "^0.11",
-        "phpstan/phpstan": "^0.12"
-
+        "codappix/typo3-php-datasets": "^2.1",
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "helmich/typo3-typoscript-lint": "^3.1",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpcov": "^10.0 || ^11.0 || ^12.0",
+        "ssch/typo3-rector": "^3.13",
+        "typo3/testing-framework": "^9.5"
     },
     "scripts": {
-        "test:cgl": [
-            ".build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --using-cache=no --path-mode=intersection ./"
+        "project:cgl": "Build/Scripts/cgl.sh",
+        "project:cgl:fix": "Build/Scripts/cgl.sh --fix",
+        "project:lint": [
+            "@project:lint:php",
+            "@project:lint:typos",
+            "@project:lint:typoscript",
+            "@project:lint:xml",
+            "@project:lint:yaml"
         ],
-        "test:cgl:dry-run": [
-            ".build/bin/php-cs-fixer fix --config=Build/.php-cs-fixer.dist.php -v --dry-run --using-cache=no --path-mode=intersection ./"
-        ],
-        "test:php:lint": [
-            ".build/bin/phplint -c Build/phplint.yaml"
-        ],
-        "test:phpstan:analyse": [
-            ".build/bin/phpstan analyse -c Build/phpstan.neon"
-        ],
-        "test:rector:process": [
-            ".build/bin/rector process *"
-        ],
-        "test:rector:process:dry-run": [
-            ".build/bin/rector process * --dry-run"
-        ],
-        "test:typoscript:lint": [
-            ".build/bin/typoscript-lint -c Build/typoscriptlint.yaml Configuration"
-        ],
-        "test:php": [
-            "@test:php:lint"
-        ],
-        "test:all": [
-            "@test:cgl",
-            "@test:php",
-            "@test:typoscript:lint"
-        ],
-        "post-autoload-dump": [
-            "mkdir -p .build/Web/typo3conf/ext/",
-            "[ -L .build/Web/typo3conf/ext/cart_paypal ] || ln -snvf ../../../../. .build/Web/typo3conf/ext/cart_paypal"
-        ]
+        "project:lint:php": "Build/Scripts/lint-php.sh",
+        "project:lint:typos": "Build/Scripts/lint-typos.sh",
+        "project:lint:typos:fix": "Build/Scripts/lint-typos.sh --fix",
+        "project:lint:typoscript": "Build/Scripts/lint-typoscript.sh",
+        "project:lint:xml": "Build/Scripts/lint-xml.sh",
+        "project:lint:yaml": "Build/Scripts/lint-yaml.sh",
+        "project:phpstan": "Build/Scripts/phpstan.sh",
+        "project:test:unit": "Build/Scripts/phpunit.sh unit",
+        "project:test:functional": "Build/Scripts/phpunit.sh functional",
+        "project:test:coverage": "Build/Scripts/coverage.sh"
     }
 }
