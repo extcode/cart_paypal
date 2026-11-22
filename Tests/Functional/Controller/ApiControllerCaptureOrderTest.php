@@ -11,6 +11,7 @@ namespace Extcode\CartPaypal\Tests\Functional\Controller;
  * LICENSE file that was distributed with this source code.
  */
 
+use Extcode\Cart\OrderHistory\OrderChangeRepository;
 use Extcode\CartPaypal\Checkout\Payment\PaymentProcessor;
 use Extcode\CartPaypal\Controller\ApiController;
 use Extcode\CartPaypal\Event\Order\CancelEvent;
@@ -21,6 +22,7 @@ use Extcode\PaypalTest\Http\PayPalApiMock;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 
 /**
  * The JavaScript captures the order after the customer approved it.
@@ -74,6 +76,31 @@ final class ApiControllerCaptureOrderTest extends AbstractPayPalTestCase
         self::assertInstanceOf(FinishEvent::class, $event);
         self::assertSame('ORD-2026-0001', $event->getOrderItem()->getOrderNumber());
         self::assertSame('1', (string)$event->getSettings()['settings']['cart']['pid']);
+    }
+
+    #[Test]
+    public function completedCaptureIsStoredInTheOrderHistory(): void
+    {
+        $this->prepareCapture(201, self::capturedOrder());
+
+        $this->captureOrder();
+
+        $changes = $this->get(ConnectionPool::class)
+            ->getConnectionForTable(OrderChangeRepository::TABLE_NAME)
+            ->select(['old_value', 'new_value', 'source', 'initiator'], OrderChangeRepository::TABLE_NAME)
+            ->fetchAllAssociative();
+
+        self::assertSame(
+            [
+                [
+                    'old_value' => 'open',
+                    'new_value' => 'paid',
+                    'source' => 'frontend',
+                    'initiator' => 'cart_paypal',
+                ],
+            ],
+            $changes
+        );
     }
 
     #[Test]

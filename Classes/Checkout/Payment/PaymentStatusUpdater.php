@@ -12,16 +12,22 @@ namespace Extcode\CartPaypal\Checkout\Payment;
  */
 
 use Extcode\Cart\Domain\Model\Order\Payment;
+use Extcode\Cart\OrderHistory\OrderChangeSource;
+use Extcode\Cart\OrderStatus\StatusChangeOutcome;
+use Extcode\Cart\OrderStatus\StatusChangeService;
 use Psr\Log\LoggerInterface;
 
 /**
- * Changes the status of a payment only if it has not been changed by another
- * request in the meantime.
+ * Changes the status of a payment with the StatusChangeService of cart, which
+ * changes it only if it has not been changed by another request in the
+ * meantime. The change is stored in the order history.
  */
 final class PaymentStatusUpdater
 {
+    public const INITIATOR = 'cart_paypal';
+
     public function __construct(
-        private readonly PaymentStatusStore $paymentStatusStore,
+        private readonly StatusChangeService $statusChangeService,
         private readonly LoggerInterface $logger,
     ) {}
 
@@ -29,30 +35,43 @@ final class PaymentStatusUpdater
      * Returns true if this call changed the status. Only the request that
      * changed it may dispatch the events of the change.
      *
-     * @param bool $byPayPal the change is caused by PayPal, e.g. a webhook, not by the customer; not stored with cart 11
+     * @param bool $byPayPal the change is caused by PayPal, e.g. a webhook, not by the customer
      */
     public function change(Payment $payment, string $toStatus, bool $byPayPal = false): bool
     {
-        $changed = $this->paymentStatusStore->updateIfStatus($payment, $payment->getStatus(), $toStatus);
+        $source = $byPayPal ? OrderChangeSource::Api : null;
 
-        if (!$changed) {
+        $result = $this->statusChangeService->change(
+            $payment,
+            $toStatus,
+            $payment->getStatus(),
+            self::INITIATOR,
+            null,
+            $source
+        );
+
+        if ($result->outcome === StatusChangeOutcome::Stale && $result->storedStatus !== null) {
             // changed by another request since the payment was loaded, try again with the stored status
-            $storedStatus = $this->paymentStatusStore->getStoredStatus($payment);
-            $payment->setStatus($storedStatus);
-            $changed = $this->paymentStatusStore->updateIfStatus($payment, $storedStatus, $toStatus);
-
-            if (!$changed && $storedStatus !== $toStatus) {
-                $this->logger->error('The status of a payment paid with PayPal could not be changed.', [
-                    'payment' => $payment->getUid(),
-                    'toStatus' => $toStatus,
-                ]);
-            }
+            $payment->setStatus($result->storedStatus);
+            $result = $this->statusChangeService->change(
+                $payment,
+                $toStatus,
+                $result->storedStatus,
+                self::INITIATOR,
+                null,
+                $source
+            );
         }
 
-        if ($changed) {
-            $payment->setStatus($toStatus);
+        if (!$result->isChanged() && $result->outcome !== StatusChangeOutcome::Unchanged) {
+            $this->logger->error('The status of a payment paid with PayPal could not be changed.', [
+                'payment' => $payment->getUid(),
+                'toStatus' => $toStatus,
+                'outcome' => $result->outcome->name,
+                'vetoReason' => $result->vetoReason,
+            ]);
         }
 
-        return $changed;
+        return $result->isChanged();
     }
 }

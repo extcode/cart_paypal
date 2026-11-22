@@ -17,3 +17,7 @@ Cart PayPal dispatches its own events after the payment.
 `\Extcode\CartPaypal\Event\Order\CancelEvent`
    Dispatched once when the customer cancels the payment and returns to the
    cart.
+
+The status of the payment is changed with the `StatusChangeService` of Cart,
+its `BeforeStatusChangeEvent` and `AfterStatusChangeEvent` are dispatched as
+well, with the initiator `cart_paypal`.
