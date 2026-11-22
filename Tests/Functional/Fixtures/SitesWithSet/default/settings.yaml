@@ -1,0 +1,4 @@
+plugin:
+  tx_cartpaypal:
+    paymentPid: 3
+    brandName: 'Shop from site settings'

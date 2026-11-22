@@ -1,12 +1,13 @@
-.. include:: ../Includes.txt
+.. include:: ../Includes.rst.txt
 
 ChangeLog
 =========
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 3
    :titlesonly:
 
+   8.0/Index
    6.0/Index
    5.0/Index
    4.0/Index

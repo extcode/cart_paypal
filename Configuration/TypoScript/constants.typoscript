@@ -1,3 +1,16 @@
 plugin.tx_cartpaypal {
+    # cat=plugin.tx_cartpaypal//10; type=int+; label=Page type of the endpoints (webhook, return, cancel, JavaScript requests)
     redirectTypeNum = 2278101
+
+    # cat=plugin.tx_cartpaypal//20; type=int+; label=Page with the content element "PayPal payment"; 0 redirects the customer to PayPal directly
+    paymentPid = 0
+
+    # cat=plugin.tx_cartpaypal//30; type=string; label=Name of the shop shown by PayPal, max. 127 characters
+    brandName =
+
+    # cat=plugin.tx_cartpaypal//40; type=string; label=Language of the PayPal pages as BCP-47 code, e.g. de-DE; empty lets PayPal decide
+    locale =
+
+    # cat=plugin.tx_cartpaypal//50; type=options[NO_SHIPPING,GET_FROM_FILE]; label=Shipping address at PayPal: NO_SHIPPING (the cart already knows the addresses) or GET_FROM_FILE
+    shippingPreference = NO_SHIPPING
 }

@@ -1,7 +1,7 @@
 parameters:
-  level: 0
+  level: 4
   paths:
     - ../Classes
     - ../Configuration
-    - ../ext_emconf.php
+    - ../Tests
     - ../ext_localconf.php

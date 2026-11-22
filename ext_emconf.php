@@ -1,27 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 $EM_CONF['cart_paypal'] = [
     'title' => 'Cart - PayPal',
     'description' => 'Shopping Cart(s) for TYPO3 - PayPal Payment Provider',
     'category' => 'services',
-    'author' => 'Daniel Gohlke',
-    'author_email' => 'ext.cart@extco.de',
-    'author_company' => 'extco.de UG (haftungsbeschränkt)',
-    'shy' => '',
-    'priority' => '',
-    'module' => '',
+    'version' => '8.0.0',
     'state' => 'stable',
-    'internal' => '',
-    'uploadfolder' => '0',
-    'createDirs' => '',
-    'modify_tables' => '',
-    'clearCacheOnLoad' => 0,
-    'lockType' => '',
-    'version' => '6.0.0',
+    'author' => 'Daniel Gohlke',
+    'author_email' => 'ext@extco.de',
+    'author_company' => 'extco.de UG (haftungsbeschränkt)',
     'constraints' => [
         'depends' => [
-            'typo3' => '10.4.0-11.5.99',
-            'cart' => '8.0.0',
+            'php' => '8.2.0-8.5.99',
+            'typo3' => '13.4.0-13.4.99',
+            'extbase' => '13.4.0-13.4.99',
+            'fluid' => '13.4.0-13.4.99',
+            'frontend' => '13.4.0-13.4.99',
+            'cart' => '11.9.0-11.99.99',
         ],
         'conflicts' => [],
         'suggests' => [],

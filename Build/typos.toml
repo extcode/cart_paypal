@@ -1,0 +1,6 @@
+[files]
+extend-exclude = [
+    # Vendored schemas, kept as published.
+    "Build/xliff-core-1.2-strict.xsd",
+    "Build/xml.xsd",
+]

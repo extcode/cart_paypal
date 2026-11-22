@@ -1,0 +1,74 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:cart="http://typo3.org/ns/Extcode/Cart/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<h3 class="h5"><f:translate key="tx_cartpaypal.payment.order" extensionName="CartPaypal"/></h3>
+
+<table class="table cart-paypal-payment__order">
+    <thead>
+        <tr>
+            <th scope="col"><f:translate key="tx_cartpaypal.payment.product" extensionName="CartPaypal"/></th>
+            <th scope="col" class="text-end"><f:translate key="tx_cartpaypal.payment.quantity" extensionName="CartPaypal"/></th>
+            <th scope="col" class="text-end"><f:translate key="tx_cartpaypal.payment.price" extensionName="CartPaypal"/></th>
+        </tr>
+    </thead>
+    <tbody>
+        <f:for each="{orderItem.products}" as="product">
+            <tr>
+                <td>
+                    {product.title}
+                    <f:if condition="{product.sku}">
+                        <br/><small class="text-muted">{product.sku}</small>
+                    </f:if>
+                </td>
+                <td class="text-end">{product.count}</td>
+                <td class="text-end text-nowrap">
+                    <cart:format.currency currencySign="{orderItem.currencySign}">{product.gross}</cart:format.currency>
+                </td>
+            </tr>
+        </f:for>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2"><f:translate key="tx_cartpaypal.payment.subtotal" extensionName="CartPaypal"/></td>
+            <td class="text-end text-nowrap">
+                <cart:format.currency currencySign="{orderItem.currencySign}">{orderItem.gross}</cart:format.currency>
+            </td>
+        </tr>
+        <f:for each="{orderItem.discounts}" as="discount">
+            <tr>
+                <td colspan="2">{discount.title}</td>
+                <td class="text-end text-nowrap">
+                    <cart:format.currency currencySign="{orderItem.currencySign}">{discount.gross}</cart:format.currency>
+                </td>
+            </tr>
+        </f:for>
+        <f:if condition="{orderItem.shipping}">
+            <tr>
+                <td colspan="2">
+                    <f:translate key="tx_cartpaypal.payment.shipping" extensionName="CartPaypal" arguments="{0: orderItem.shipping.name}"/>
+                </td>
+                <td class="text-end text-nowrap">
+                    <cart:format.currency currencySign="{orderItem.currencySign}">{orderItem.shipping.gross}</cart:format.currency>
+                </td>
+            </tr>
+        </f:if>
+        <f:if condition="{orderItem.payment.gross}">
+            <tr>
+                <td colspan="2">
+                    <f:translate key="tx_cartpaypal.payment.payment_fee" extensionName="CartPaypal" arguments="{0: orderItem.payment.name}"/>
+                </td>
+                <td class="text-end text-nowrap">
+                    <cart:format.currency currencySign="{orderItem.currencySign}">{orderItem.payment.gross}</cart:format.currency>
+                </td>
+            </tr>
+        </f:if>
+        <tr class="fw-bold">
+            <td colspan="2"><f:translate key="tx_cartpaypal.payment.total" extensionName="CartPaypal"/></td>
+            <td class="text-end text-nowrap">
+                <cart:format.currency currencySign="{orderItem.currencySign}">{orderItem.totalGross}</cart:format.currency>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+</html>

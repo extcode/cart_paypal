@@ -1,16 +1,47 @@
 <?php
 
-defined('TYPO3_MODE') or die();
+declare(strict_types=1);
+
+defined('TYPO3') or die();
+
+use Extcode\CartPaypal\Controller\ApiController;
+use Extcode\CartPaypal\Controller\PaymentController;
+use Extcode\CartPaypal\Controller\WebhookController;
+use TYPO3\CMS\Extbase\Utility\ExtensionUtility;
 
 // configure plugins
 
-\TYPO3\CMS\Extbase\Utility\ExtensionUtility::configurePlugin(
+// The content element on the payment page, shows the PayPal button.
+ExtensionUtility::configurePlugin(
     'CartPaypal',
-    'Cart',
+    'Payment',
     [
-        \Extcode\CartPaypal\Controller\Order\PaymentController::class => 'success, cancel, notify',
+        PaymentController::class => 'show',
     ],
     [
-        \Extcode\CartPaypal\Controller\Order\PaymentController::class => 'success, cancel, notify',
-    ]
+        PaymentController::class => 'show',
+    ],
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
 );
+
+// The endpoints on the page type, called by the JavaScript, by PayPal and by
+// the customer returning from PayPal. The webhook is the default action, so
+// its URL needs no plugin arguments and no cHash.
+ExtensionUtility::configurePlugin(
+    'CartPaypal',
+    'Api',
+    [
+        WebhookController::class => 'webhook',
+        ApiController::class => 'createOrder, captureOrder, redirect, return, cancel',
+    ],
+    [
+        WebhookController::class => 'webhook',
+        ApiController::class => 'createOrder, captureOrder, redirect, return, cancel',
+    ],
+    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
+);
+
+// exclude parameters from cHash, PayPal appends them to the return URL
+
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'token';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'PayerID';

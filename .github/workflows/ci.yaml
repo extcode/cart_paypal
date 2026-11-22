@@ -1,0 +1,188 @@
+name: CI
+on:
+  - pull_request
+jobs:
+  check-composer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate composer.json
+        run: composer validate
+
+  php-linting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - 8.2
+          - 8.3
+          - 8.4
+          - 8.5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
+
+      - name: PHP lint
+        run: Build/Scripts/lint-php.sh
+
+  typos-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install typos
+        run: pipx install typos
+
+      - name: Typos lint
+        run: Build/Scripts/lint-typos.sh
+
+  typoscript-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: TypoScript lint
+        run: Build/Scripts/lint-typoscript.sh
+
+  xml-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: XML lint
+        run: Build/Scripts/lint-xml.sh
+
+  yaml-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pipx install yamllint
+
+      - name: YAML lint
+        run: Build/Scripts/lint-yaml.sh
+
+  documentation-rendering:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Documentation without warnings
+        run: |
+          mkdir -p Documentation-GENERATED-temp \
+          && docker run --rm --pull always -v $(pwd):/project \
+             ghcr.io/typo3-documentation/render-guides:latest --config=Documentation --no-progress --fail-on-log
+
+  coding-guideline:
+    runs-on: ubuntu-latest
+    needs:
+      - php-linting
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Coding Guideline
+        run: Build/Scripts/cgl.sh
+
+  code-quality:
+    runs-on: ubuntu-latest
+    needs:
+      - php-linting
+    strategy:
+      matrix:
+        include:
+          - php-version: '8.2'
+            typo3-version: '^13.4'
+          - php-version: '8.3'
+            typo3-version: '^13.4'
+          - php-version: '8.4'
+            typo3-version: '^13.4'
+          - php-version: '8.5'
+            typo3-version: '^13.4'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
+
+      - name: Install dependencies with expected TYPO3 version
+        run: |-
+          composer require --no-interaction --prefer-dist --no-progress "typo3/cms-core:${{ matrix.typo3-version }}" "typo3/cms-extbase:${{ matrix.typo3-version }}" "typo3/cms-frontend:${{ matrix.typo3-version }}"
+
+      - name: Code Quality (by PHPStan)
+        run: Build/Scripts/phpstan.sh
+
+  tests-unit-and-functional:
+    runs-on: ubuntu-latest
+    needs:
+      - coding-guideline
+      - code-quality
+    strategy:
+      matrix:
+        php-version:
+          - 8.2
+          - 8.3
+          - 8.4
+          - 8.5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php-version }}"
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run unit tests
+        run: Build/Scripts/phpunit.sh unit
+
+      - name: Run functional tests
+        run: Build/Scripts/phpunit.sh functional

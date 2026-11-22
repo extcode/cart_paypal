@@ -1,61 +1,41 @@
 # Cart PayPal
 
 Cart is a small but powerful extension which "solely" adds a shopping cart to your TYPO3 installation.
-Cart PayPal is a payment provider and implements the PayPal IPN message service.
+Cart PayPal is a payment provider.
+
+Read the [extension documentation](https://docs.typo3.org/p/extcode/cart-paypal/main/en-us/).
 
 ## 1. Features
 
--
--
--
+- Shows the PayPal button of the PayPal JavaScript SDK on a payment page.
+- Creates and captures the payment with the PayPal Orders v2 API on the server.
+- Redirects the customer to PayPal if no payment page is configured.
+- Finishes the order with PayPal webhooks if the customer does not return to the shop.
 
-## 2. Installation / Upgrade
+## 2. Installation
 
-### 2.1 Installation
+Please have a look into the [installation chapter of the documentation](https://docs.typo3.org/p/extcode/cart-paypal/main/en-us/Administrator/Installation/Index.html).
 
-#### Installation using Composer
+## 3. Versions
 
-The recommended way to install the extension is by using [Composer][2]. In your Composer based TYPO3 project root, just do `composer require extcode/cart-paypal`. 
+### 3.1 Compatibility and supported versions
 
-#### Installation as extension from TYPO3 Extension Repository (TER)
+The compatibility with TYPO3 and PHP and the support status of all versions are listed in the
+[official extension documentation in chapter supported versions](https://docs.typo3.org/p/extcode/cart-paypal/main/en-us/Introduction/SupportedVersions/Index.html).
 
-Download and install the extension with the extension manager module.
+If you need extended support for features and bug fixes outside of the currently supported versions,
+we are happy to offer paid services.
 
-### 2.2 Upgrade
+### 3.2 Changelog
 
-**If upgrading from cart version 4.8.1 or earlier: Please read the documentation very carefully! Please make a backup of your filesystem
-and database!** If possible test the update in a test copy of your TYPO3 instance.
+Please have a look into the [official extension documentation in changelog chapter](https://docs.typo3.org/p/extcode/cart-paypal/main/en-us/Changelog/Index.html)
 
-## 3. Administration
-
-## 3.1 Compatibility and supported Versions
-
-| Cart PayPal   | TYPO3      | PHP       | Support/Development                  |
-|---------------| ---------- | ----------|--------------------------------------|
-| 6.x.x         | 10.4, 11.5 | 7.2+      | Features, Bugfixes, Security Updates |
-| 5.x.x         | 10.4       | 7.2 - 7.4 | Bugfixes, Security Updates           |
-| 4.x.x         | 9.5        | 7.2 - 7.4 | Security Updates                     |
-| 3.x.x         | 8.7        | 7.0 - 7.4 |                                      |
-| 2.x.x         | 6.2 - 8.7  | 5.6 - 7.0 |                                      |
-| 1.x.x         |            |           |                                      |
-
-### 3.2. Changelog
-
-Please have a look into the [official extension documentation in changelog chapter](https://docs.typo3.org/p/extcode/cart_paypal/main/en-us/Changelog/Index.html)
-
-### 3.3. Release Management
-
-News uses **semantic versioning** which basically means for you, that
-- **bugfix updates** (e.g. 1.0.0 => 1.0.1) just includes small bugfixes or security relevant stuff without breaking changes.
-- **minor updates** (e.g. 1.0.0 => 1.1.0) includes new features and smaller tasks without breaking changes.
-- **major updates** (e.g. 1.0.0 => 2.0.0) breaking changes wich can be refactorings, features or bugfixes.
+**Attention:** Before updating to a new minor version or upgrading to a new major version, be sure to check the
+changelog section in the documentation.
+Sometimes minor versions also result in minor adjustments to own templates or configurations.
 
 ## 4. Sponsoring
 
 * Ask for an invoice.
 * [GitHub Sponsors](https://github.com/sponsors/extcode)
 * [PayPal.Me](https://paypal.me/extcart)
-* [Patreon](https://patreon.com/ext_cart)
-
-[1]: https://docs.typo3.org/typo3cms/extensions/cart_paypal/
-[2]: https://getcomposer.org/
