@@ -35,6 +35,24 @@ them in the cart, e.g. "PayPal" and "Credit card".
        }
    }
 
+If Cart reads the payment methods from the site settings (site set loader of
+Cart), the option is added to `extcode.cart-payments` in the same way:
+
+.. code-block:: yaml
+   :caption: config/sites/<site>/settings.yaml
+
+   extcode:
+     cart-payments:
+       countries:
+         de:
+           options:
+             2:
+               provider: PAYPAL
+               title: PayPal
+               extra: 0.0
+               taxClassId: 1
+               status: open
+
 |
 
 .. container:: table-row

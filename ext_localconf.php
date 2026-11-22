@@ -20,8 +20,7 @@ ExtensionUtility::configurePlugin(
     ],
     [
         PaymentController::class => 'show',
-    ],
-    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
+    ]
 );
 
 // The endpoints on the page type, called by the JavaScript, by PayPal and by
@@ -37,8 +36,7 @@ ExtensionUtility::configurePlugin(
     [
         WebhookController::class => 'webhook',
         ApiController::class => 'createOrder, captureOrder, redirect, return, cancel',
-    ],
-    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
+    ]
 );
 
 // exclude parameters from cHash, PayPal appends them to the return URL

@@ -51,11 +51,11 @@
     },
     "require": {
         "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "extcode/cart": "^11.10",
-        "typo3/cms-core": "^13.4",
-        "typo3/cms-extbase": "^13.4",
-        "typo3/cms-fluid": "^13.4",
-        "typo3/cms-frontend": "^13.4"
+        "extcode/cart": "^12.6",
+        "typo3/cms-core": "^14.3",
+        "typo3/cms-extbase": "^14.3",
+        "typo3/cms-fluid": "^14.3",
+        "typo3/cms-frontend": "^14.3"
     },
     "require-dev": {
         "codappix/typo3-php-datasets": "^2.1",

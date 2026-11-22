@@ -11,6 +11,7 @@ namespace Extcode\CartPaypal\Tests\Unit\EventListener\Order\Payment;
  * LICENSE file that was distributed with this source code.
  */
 
+use Extcode\Cart\Configuration\Loader\PaymentMethodsLoaderInterface;
 use Extcode\Cart\Domain\Model\Cart\Cart;
 use Extcode\Cart\Domain\Model\Cart\Service;
 use Extcode\Cart\Domain\Model\Cart\ServiceInterface;
@@ -19,7 +20,6 @@ use Extcode\Cart\Domain\Model\Order\Item as OrderItem;
 use Extcode\Cart\Domain\Model\Order\Payment;
 use Extcode\Cart\Domain\Model\Order\ShippingAddress;
 use Extcode\Cart\Event\Order\PaymentEvent;
-use Extcode\Cart\Service\PaymentMethodsServiceInterface;
 use Extcode\Cart\Service\SessionHandler;
 use Extcode\Cart\Utility\CartUtility;
 use Extcode\CartPaypal\EventListener\Order\Payment\ClearCart;
@@ -44,7 +44,7 @@ final class ClearCartTest extends UnitTestCase
 
     private CartUtility&MockObject $cartUtility;
 
-    private PaymentMethodsServiceInterface&MockObject $paymentMethodsService;
+    private PaymentMethodsLoaderInterface&MockObject $paymentMethodsLoader;
 
     private SessionHandler&MockObject $sessionHandler;
 
@@ -57,7 +57,7 @@ final class ClearCartTest extends UnitTestCase
         parent::setUp();
 
         $this->cartUtility = $this->createMock(CartUtility::class);
-        $this->paymentMethodsService = $this->createMock(PaymentMethodsServiceInterface::class);
+        $this->paymentMethodsLoader = $this->createMock(PaymentMethodsLoaderInterface::class);
         $this->sessionHandler = $this->createMock(SessionHandler::class);
 
         $payment = self::createStub(ServiceInterface::class);
@@ -68,7 +68,7 @@ final class ClearCartTest extends UnitTestCase
 
         $this->subject = new ClearCart(
             $this->cartUtility,
-            $this->paymentMethodsService,
+            $this->paymentMethodsLoader,
             $this->sessionHandler,
         );
     }
@@ -84,7 +84,7 @@ final class ClearCartTest extends UnitTestCase
     #[DataProvider('otherProviderDataProvider')]
     public function doesNothingForPaymentsOfOtherProviders(string $provider): void
     {
-        $this->paymentMethodsService->expects(self::never())->method('getPaymentMethods');
+        $this->paymentMethodsLoader->expects(self::never())->method('getPaymentMethods');
         $this->cartUtility->expects(self::never())->method('getNewCart');
         $this->sessionHandler->expects(self::never())->method('writeCart');
         $this->sessionHandler->expects(self::never())->method('writeAddress');
@@ -95,7 +95,7 @@ final class ClearCartTest extends UnitTestCase
     #[Test]
     public function doesNotClearTheCartIfPreventClearCartIsSet(): void
     {
-        $this->paymentMethodsService
+        $this->paymentMethodsLoader
             ->expects(self::once())
             ->method('getPaymentMethods')
             ->willReturn($this->createPaymentMethods([
@@ -126,7 +126,7 @@ final class ClearCartTest extends UnitTestCase
     #[DataProvider('paymentMethodsWithoutPreventClearCartDataProvider')]
     public function clearsCartAndAddressesForPayPalPayments(array $paymentMethodConfigurations): void
     {
-        $this->paymentMethodsService
+        $this->paymentMethodsLoader
             ->expects(self::once())
             ->method('getPaymentMethods')
             ->with($this->cart)
@@ -166,7 +166,7 @@ final class ClearCartTest extends UnitTestCase
     #[Test]
     public function clearsCartForCreditCardPaymentsWithPayPal(): void
     {
-        $this->paymentMethodsService->expects(self::once())->method('getPaymentMethods')->willReturn([]);
+        $this->paymentMethodsLoader->expects(self::once())->method('getPaymentMethods')->willReturn([]);
         $this->cartUtility->expects(self::once())->method('getNewCart')->willReturn(self::createStub(Cart::class));
 
         $this->sessionHandler->expects(self::once())->method('writeCart');
@@ -177,7 +177,7 @@ final class ClearCartTest extends UnitTestCase
     #[Test]
     public function doesNotStopThePropagationOfTheEvent(): void
     {
-        $this->paymentMethodsService->expects(self::once())->method('getPaymentMethods')->willReturn([]);
+        $this->paymentMethodsLoader->expects(self::once())->method('getPaymentMethods')->willReturn([]);
         $this->cartUtility->expects(self::once())->method('getNewCart')->willReturn(self::createStub(Cart::class));
         $this->sessionHandler->expects(self::once())->method('writeCart');
 
@@ -189,7 +189,7 @@ final class ClearCartTest extends UnitTestCase
     }
 
     /**
-     * Creates the payment methods like PaymentMethodsServiceInterface returns
+     * Creates the payment methods like PaymentMethodsLoaderInterface returns
      * them: services indexed by their id.
      *
      * @param array<int, array> $configurations

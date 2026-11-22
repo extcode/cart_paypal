@@ -67,6 +67,12 @@ abstract class AbstractPayPalTestCase extends FunctionalTestCase
         'MAIL' => [
             'transport' => 'null',
         ],
+        'SYS' => [
+            'features' => [
+                // the MailHandler of cart is deprecated since cart 12.4
+                'cart.useNewOrderMailSender' => true,
+            ],
+        ],
     ];
 
     protected function setUp(): void

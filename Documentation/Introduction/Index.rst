@@ -37,5 +37,6 @@ The emails of Cart are sent after the payment is completed.
    :maxdepth: 2
    :titlesonly:
 
+   SupportedVersions/Index
    Support/Index
    Sponsoring/Index
