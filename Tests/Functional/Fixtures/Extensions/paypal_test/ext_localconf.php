@@ -16,8 +16,7 @@ ExtensionUtility::configurePlugin(
     ],
     [
         PaymentEventController::class => 'dispatch',
-    ],
-    ExtensionUtility::PLUGIN_TYPE_CONTENT_ELEMENT
+    ]
 );
 
 // No request to PayPal leaves the tests.

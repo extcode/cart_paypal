@@ -11,10 +11,10 @@ namespace Extcode\CartPaypal\EventListener\Order\Payment;
  * LICENSE file that was distributed with this source code.
  */
 
+use Extcode\Cart\Configuration\Loader\PaymentMethodsLoaderInterface;
 use Extcode\Cart\Domain\Model\Order\BillingAddress;
 use Extcode\Cart\Domain\Model\Order\ShippingAddress;
 use Extcode\Cart\Event\Order\PaymentEvent;
-use Extcode\Cart\Service\PaymentMethodsServiceInterface;
 use Extcode\Cart\Service\SessionHandler;
 use Extcode\Cart\Utility\CartUtility;
 use Extcode\CartPaypal\Checkout\Payment\PaymentProvider;
@@ -24,7 +24,7 @@ final class ClearCart
 {
     public function __construct(
         private readonly CartUtility $cartUtility,
-        private readonly PaymentMethodsServiceInterface $paymentMethodsService,
+        private readonly PaymentMethodsLoaderInterface $paymentMethodsLoader,
         private readonly SessionHandler $sessionHandler
     ) {}
 
@@ -40,7 +40,7 @@ final class ClearCart
 
             $paymentId = $cart->getPayment()->getId();
 
-            $paymentMethod = $this->paymentMethodsService->getPaymentMethods($cart)[$paymentId] ?? null;
+            $paymentMethod = $this->paymentMethodsLoader->getPaymentMethods($cart)[$paymentId] ?? null;
 
             if ((int)($paymentMethod?->getConfig()['preventClearCart'] ?? 0) !== 1) {
                 $cartPid = $settings['settings']['cart']['pid'];
