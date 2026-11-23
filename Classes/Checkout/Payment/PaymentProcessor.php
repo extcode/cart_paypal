@@ -12,7 +12,7 @@ namespace Extcode\CartPaypal\Checkout\Payment;
  */
 
 use Extcode\Cart\Domain\Model\Order\Item;
-use Extcode\Cart\OrderStatus\PaymentStatus;
+use Extcode\Cart\Domain\Order\Status\PaymentStatus;
 use Extcode\CartPaypal\Api\ApiException;
 use Extcode\CartPaypal\Api\PayPalClient;
 use Extcode\CartPaypal\Checkout\CheckoutException;

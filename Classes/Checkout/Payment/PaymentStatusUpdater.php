@@ -12,9 +12,9 @@ namespace Extcode\CartPaypal\Checkout\Payment;
  */
 
 use Extcode\Cart\Domain\Model\Order\Payment;
-use Extcode\Cart\OrderHistory\OrderChangeSource;
-use Extcode\Cart\OrderStatus\StatusChangeOutcome;
-use Extcode\Cart\OrderStatus\StatusChangeService;
+use Extcode\Cart\Domain\Order\History\OrderChangeSource;
+use Extcode\Cart\Domain\Order\Status\StatusChangeOutcome;
+use Extcode\Cart\Domain\Order\Status\StatusChangeService;
 use Psr\Log\LoggerInterface;
 
 /**
