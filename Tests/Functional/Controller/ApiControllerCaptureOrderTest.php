@@ -11,7 +11,7 @@ namespace Extcode\CartPaypal\Tests\Functional\Controller;
  * LICENSE file that was distributed with this source code.
  */
 
-use Extcode\Cart\OrderHistory\OrderChangeRepository;
+use Extcode\Cart\Domain\Order\History\OrderChangeRepository;
 use Extcode\CartPaypal\Checkout\Payment\PaymentProcessor;
 use Extcode\CartPaypal\Controller\ApiController;
 use Extcode\CartPaypal\Event\Order\CancelEvent;
